@@ -293,9 +293,25 @@ export function App() {
         </div>
 
         <div className={`border-t ${theme.border} px-5 py-3 text-xs ${theme.muted}`}>
-          <button className="mb-2 underline" onClick={() => void chooseStorageFolder()} type="button">
+          <div className="mb-2 flex items-center justify-between gap-3">
+          <button className="underline" onClick={() => void chooseStorageFolder()} type="button">
             选择存储文件夹
           </button>
+            <a
+              className="flex shrink-0 flex-col items-center gap-1 hover:underline"
+              href="https://github.com/MidnightPigeon"
+              rel="noreferrer"
+              target="_blank"
+              title="作者主页"
+            >
+              <img
+                alt="作者头像"
+                className="h-7 w-7 rounded-md border border-[#c9d8e8]"
+                src="https://github.com/MidnightPigeon.png?size=64"
+              />
+              <span>联系作者</span>
+            </a>
+          </div>
           <p className="truncate" title={storage?.ideasDir}>
             {storage?.ideasDir ?? "正在准备存储目录"}
           </p>

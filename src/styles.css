@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 :root {
-  color: #17201b;
-  background: #f7f5ef;
-  font-synthesis: none;
+  color: #17212b;
+  background: #eef6ff;
+  font-synthesis: weight style;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -52,6 +52,15 @@ textarea {
 .markdown-preview ul,
 .markdown-preview ol {
   margin: 0 0 1rem 1.25rem;
+  padding-left: 1.25rem;
+}
+
+.markdown-preview ul {
+  list-style: disc;
+}
+
+.markdown-preview ol {
+  list-style: decimal;
 }
 
 .markdown-preview li {
@@ -65,18 +74,49 @@ textarea {
   padding-left: 0.9rem;
 }
 
+.markdown-preview em {
+  display: inline-block;
+  font-style: italic;
+  transform: skewX(-8deg);
+  transform-origin: center;
+}
+
+.markdown-preview strong {
+  font-weight: 700;
+}
+
 .markdown-preview code {
-  background: #ece8dc;
+  background: #20251f !important;
   border-radius: 4px;
+  color: #d8dee9 !important;
   font-family: JetBrains Mono, Consolas, monospace;
   font-size: 0.9em;
-  padding: 0.1rem 0.25rem;
+  padding: 0.12rem 0.3rem;
 }
 
 .markdown-preview pre {
-  background: #20251f;
+  background: #20251f !important;
   border-radius: 8px;
-  color: #f7f5ef;
+  color: #d8dee9 !important;
   overflow: auto;
   padding: 1rem;
+}
+
+.markdown-preview pre code {
+  background: transparent !important;
+  border-radius: 0;
+  color: inherit !important;
+  display: block;
+  padding: 0;
+}
+
+.markdown-preview pre code *,
+.markdown-preview code * {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+.markdown-preview mark {
+  background: transparent !important;
+  color: inherit !important;
 }
