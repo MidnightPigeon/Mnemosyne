@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Frontend build output
+dist/
+releases/
+
+# Tauri and Rust build output
+src-tauri/target/
+src-tauri/gen/
+
+# Local portable tooling installed for this machine
+.tools/
+
+# Local app data, user settings, and private ideas
+ideas/
+storage/
+data/
+local-data/
+mnemosyne-data/
+settings.json
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment and machine-local configuration
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+*.code-workspace
+
+# Logs and diagnostics
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS noise
+Thumbs.db
+Desktop.ini
+.DS_Store

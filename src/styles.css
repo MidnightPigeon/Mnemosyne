@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #17201b;
+  background: #f7f5ef;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.markdown-preview h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+}
+
+.markdown-preview h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.75rem;
+}
+
+.markdown-preview h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 1rem 0 0.5rem;
+}
+
+.markdown-preview p {
+  margin: 0 0 0.9rem;
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  margin: 0 0 1rem 1.25rem;
+}
+
+.markdown-preview li {
+  margin: 0.25rem 0;
+}
+
+.markdown-preview blockquote {
+  border-left: 3px solid #78917b;
+  color: #4f5f55;
+  margin: 1rem 0;
+  padding-left: 0.9rem;
+}
+
+.markdown-preview code {
+  background: #ece8dc;
+  border-radius: 4px;
+  font-family: JetBrains Mono, Consolas, monospace;
+  font-size: 0.9em;
+  padding: 0.1rem 0.25rem;
+}
+
+.markdown-preview pre {
+  background: #20251f;
+  border-radius: 8px;
+  color: #f7f5ef;
+  overflow: auto;
+  padding: 1rem;
+}
