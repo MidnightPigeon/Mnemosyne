@@ -483,6 +483,18 @@ function PixelEditor({
     return canvas;
   }, [canvas, color, dragStart, drawOptions, filled, hoverPoint, isDragging, sprayRadius, sprayShape, thickness, tool]);
 
+  const cursorPreviewIndices = useMemo(() => {
+    if (!canvas || !hoverPoint || isDragging || tool === "fill") {
+      return new Set<number>();
+    }
+
+    if (tool === "spray") {
+      return collectSprayPreview(canvas, hoverPoint, sprayRadius, sprayShape);
+    }
+
+    return collectBrushPreview(canvas, hoverPoint, thickness);
+  }, [canvas, hoverPoint, isDragging, sprayRadius, sprayShape, thickness, tool]);
+
   if (!canvas) {
     return <div className="p-6 text-sm">画布数据缺失。</div>;
   }
@@ -636,7 +648,12 @@ function PixelEditor({
               onMouseDown={() => handlePointerDown(index)}
               onMouseEnter={() => handlePointerEnter(index)}
               onMouseUp={() => handlePointerUp(index)}
-              style={{ backgroundColor: pixel, width: zoom, height: zoom }}
+              style={{
+                backgroundColor: pixel,
+                boxShadow: cursorPreviewIndices.has(index) ? "inset 0 0 0 2px rgba(36, 91, 130, 0.9)" : undefined,
+                width: zoom,
+                height: zoom
+              }}
               type="button"
             />
           ))}
@@ -743,4 +760,52 @@ function NumberField({
 
 function isPreviewTool(tool: PixelTool): boolean {
   return tool === "line" || tool === "rect" || tool === "ellipse";
+}
+
+function collectBrushPreview(canvas: PixelCanvas, center: PixelPoint, thickness: number): Set<number> {
+  const indices = new Set<number>();
+  const size = Math.max(1, Math.round(thickness));
+  const before = Math.floor((size - 1) / 2);
+  const after = Math.ceil((size - 1) / 2);
+
+  for (let y = center.y - before; y <= center.y + after; y += 1) {
+    for (let x = center.x - before; x <= center.x + after; x += 1) {
+      const index = pointToIndex(canvas, x, y);
+      if (index !== undefined) {
+        indices.add(index);
+      }
+    }
+  }
+
+  return indices;
+}
+
+function collectSprayPreview(canvas: PixelCanvas, center: PixelPoint, radius: number, shape: SprayShape): Set<number> {
+  const indices = new Set<number>();
+  const safeRadius = Math.max(1, Math.round(radius));
+
+  for (let y = center.y - safeRadius; y <= center.y + safeRadius; y += 1) {
+    for (let x = center.x - safeRadius; x <= center.x + safeRadius; x += 1) {
+      const dx = x - center.x;
+      const dy = y - center.y;
+      if (shape === "circle" && dx * dx + dy * dy > safeRadius * safeRadius) {
+        continue;
+      }
+
+      const index = pointToIndex(canvas, x, y);
+      if (index !== undefined) {
+        indices.add(index);
+      }
+    }
+  }
+
+  return indices;
+}
+
+function pointToIndex(canvas: PixelCanvas, x: number, y: number): number | undefined {
+  if (x < 0 || y < 0 || x >= canvas.width || y >= canvas.height) {
+    return undefined;
+  }
+
+  return y * canvas.width + x;
 }

@@ -155,13 +155,18 @@ export function drawEllipse(canvas: PixelCanvas, start: PixelPoint, end: PixelPo
   const ry = Math.max(1, (maxY - minY) / 2);
   const cx = minX + rx;
   const cy = minY + ry;
-  const edgeWidth = Math.max(0.04, options.thickness / Math.max(rx, ry));
+  const innerRx = rx - Math.max(1, options.thickness);
+  const innerRy = ry - Math.max(1, options.thickness);
 
   return mutatePixels(canvas, (pixels) => {
     for (let y = minY; y <= maxY; y += 1) {
       for (let x = minX; x <= maxX; x += 1) {
         const value = ((x - cx) * (x - cx)) / (rx * rx) + ((y - cy) * (y - cy)) / (ry * ry);
-        const shouldPaint = options.filled ? value <= 1 : value <= 1 && value >= 1 - edgeWidth;
+        const innerValue =
+          innerRx <= 0 || innerRy <= 0
+            ? Number.POSITIVE_INFINITY
+            : ((x - cx) * (x - cx)) / (innerRx * innerRx) + ((y - cy) * (y - cy)) / (innerRy * innerRy);
+        const shouldPaint = options.filled ? value <= 1 : value <= 1 && innerValue >= 1;
         if (shouldPaint) {
           const index = toIndex(canvas, x, y);
           if (index !== undefined) {
@@ -180,9 +185,12 @@ function mutatePixels(canvas: PixelCanvas, mutator: (pixels: string[]) => void):
 }
 
 function forEachBrushPoint(canvas: PixelCanvas, center: PixelPoint, thickness: number, paint: (index: number) => void): void {
-  const radius = Math.max(0, Math.floor((Math.max(1, thickness) - 1) / 2));
-  for (let y = center.y - radius; y <= center.y + radius; y += 1) {
-    for (let x = center.x - radius; x <= center.x + radius; x += 1) {
+  const size = Math.max(1, Math.round(thickness));
+  const before = Math.floor((size - 1) / 2);
+  const after = Math.ceil((size - 1) / 2);
+
+  for (let y = center.y - before; y <= center.y + after; y += 1) {
+    for (let x = center.x - before; x <= center.x + after; x += 1) {
       const index = toIndex(canvas, x, y);
       if (index !== undefined) {
         paint(index);
