@@ -3,5 +3,5 @@
   "identifier": "default",
   "description": "Main window capability for local Idea storage.",
   "windows": ["main"],
-  "permissions": ["core:default"]
+  "permissions": ["core:default", "opener:default"]
 }

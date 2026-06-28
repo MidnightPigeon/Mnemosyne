@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { renderMarkdown } from "../lib/markdown";
 import { exportCanvasJpeg, exportMarkdown, importImageCanvas, resizeCanvas } from "../data/ideaRepository";
 import {
@@ -80,6 +81,8 @@ const markdownTips = [
   ["```", "代码块"],
   ["[文字](链接)", "链接"]
 ];
+
+const authorUrl = "https://github.com/MidnightPigeon";
 
 export function App() {
   const {
@@ -297,12 +300,11 @@ export function App() {
           <button className="underline" onClick={() => void chooseStorageFolder()} type="button">
             选择存储文件夹
           </button>
-            <a
+            <button
               className="flex shrink-0 flex-col items-center gap-1 hover:underline"
-              href="https://github.com/MidnightPigeon"
-              rel="noreferrer"
-              target="_blank"
+              onClick={() => void openUrl(authorUrl)}
               title="作者主页"
+              type="button"
             >
               <img
                 alt="作者头像"
@@ -310,7 +312,7 @@ export function App() {
                 src="https://github.com/MidnightPigeon.png?size=64"
               />
               <span>联系作者</span>
-            </a>
+            </button>
           </div>
           <p className="truncate" title={storage?.ideasDir}>
             {storage?.ideasDir ?? "正在准备存储目录"}
