@@ -59,7 +59,6 @@ npm run dev
 构建产物位置：
 
 - `src-tauri/target/release/mnemosyne.exe`
-- `src-tauri/target/release/bundle/msi/Mnemosyne_0.1.0_x64_en-US.msi`
 - `src-tauri/target/release/bundle/nsis/Mnemosyne_0.1.0_x64-setup.exe`
 
 ### 隐私与版本控制
@@ -121,7 +120,6 @@ If a portable Node.js runtime exists in the project directory, these helper scri
 Build outputs:
 
 - `src-tauri/target/release/mnemosyne.exe`
-- `src-tauri/target/release/bundle/msi/Mnemosyne_0.1.0_x64_en-US.msi`
 - `src-tauri/target/release/bundle/nsis/Mnemosyne_0.1.0_x64-setup.exe`
 
 ### Privacy And Git
