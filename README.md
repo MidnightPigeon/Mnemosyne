@@ -2,11 +2,13 @@
 
 其实是自己的灵感太碎片化导致的，需要一个能快速创作和记录的本地集成工作台，于是vibe了这么一个小玩意。功能都是自己需要的，协议是MIT，有需要可以自行改动。由于是自用，非恶性bug类的issue可能不被采纳。后续还会更新。
 
-产品后续可能由“京晨聚码教育科技有限公司”正式发布。
+产品后续可能由“北京京晨聚码教育科技有限公司”正式发布。
 
 ## 中文说明
 
 Mnemosyne 是一个本地优先的个人创作工作台，用来快速保存、整理和回看灵感。当前版本聚焦基础可用性：文本记录、像素画布、本地文件夹存储、自动保存、导入导出和时间线浏览。
+
+通过release中的.exe文件即可直接安装成品软件。
 
 ### 当前功能
 
@@ -69,6 +71,8 @@ npm run dev
 
 Mnemosyne is a local-first creative workspace for capturing, organizing, and reviewing personal ideas. The current version focuses on a reliable foundation: text records, pixel canvases, local folder storage, autosave, import/export, and timeline browsing.
 
+Setup the software by using .exe file in 'release'.
+
 ### Features
 
 - Text records: independent title, Markdown editor, live preview, and collapsible Markdown helper panel.
@@ -125,3 +129,5 @@ Build outputs:
 ### Privacy And Git
 
 Idea JSON files, database files, environment variables, local settings, portable tools, and build outputs are ignored by Git. A custom storage folder outside the repository will not be tracked by Git.
+
+
