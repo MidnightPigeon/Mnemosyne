@@ -625,27 +625,57 @@ function PixelEditor({
             实心
           </label>
         ) : null}
-        <NumberControl label="尺寸" max={512} min={4} onChange={setTargetSize} value={targetSize} />
         <label className="flex items-center gap-2 text-sm">
-          <input checked={cropImage} onChange={(event) => setCropImage(event.target.checked)} type="checkbox" />
+          <input
+            checked={cropImage}
+            onChange={(event) => setCropImage(event.target.checked)}
+            type="checkbox"
+          />
           居中裁剪
         </label>
-        <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleImportImage()}>
+
+        <button
+          className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`}
+          onClick={() => void handleImportImage()}
+        >
           导入图片
         </button>
-        <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleResizeCanvas()}>
-          调整画布
-        </button>
-        <span className={`text-xs ${theme.muted}`}>
-          {canvas.width} x {canvas.height}
-        </span>
-        <div className="ml-auto">
-          <NumberControl label="缩放" max={32} min={8} onChange={setZoom} value={zoom} />
+
+        {/* 独立一行 */}
+        <div className="basis-full flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <NumberControl
+              label="尺寸"
+              max={512}
+              min={4}
+              onChange={setTargetSize}
+              value={targetSize}
+            />
+
+            <button
+              className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`}
+              onClick={() => void handleResizeCanvas()}
+            >
+              调整画布
+            </button>
+          </div>
+
+          <span className={`text-xs ${theme.muted}`}>
+            {canvas.width} × {canvas.height}
+          </span>
+
+          <NumberControl
+            label="缩放"
+            max={32}
+            min={8}
+            onChange={setZoom}
+            value={zoom}
+          />
         </div>
       </div>
 
       <div
-        className="min-h-0 flex-1 overflow-auto p-6"
+        className="min-h-0 flex-1 overflow-auto p-6 flex items-center justify-center"
         onMouseLeave={() => {
           setIsDragging(false);
           setHoverPoint(null);
