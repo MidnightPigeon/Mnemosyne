@@ -17,6 +17,8 @@ export type DrawOptions = {
   sprayShape: SprayShape;
 };
 
+export const transparentPixel = "#00000000";
+
 export function pointFromIndex(index: number, width: number): PixelPoint {
   return {
     x: index % width,
@@ -84,6 +86,42 @@ export function floodFill(canvas: PixelCanvas, point: PixelPoint, color: string)
       );
     }
   });
+}
+
+export function cropCanvasBounds(canvas: PixelCanvas, width: number, height: number): PixelCanvas {
+  const nextWidth = clampCanvasSize(width);
+  const nextHeight = clampCanvasSize(height);
+  const pixels = Array.from({ length: nextWidth * nextHeight }, () => transparentPixel);
+  const xOffset = Math.floor((canvas.width - nextWidth) / 2);
+  const yOffset = Math.floor((canvas.height - nextHeight) / 2);
+
+  for (let y = 0; y < nextHeight; y += 1) {
+    for (let x = 0; x < nextWidth; x += 1) {
+      const sourceX = x + xOffset;
+      const sourceY = y + yOffset;
+      const sourceIndex = toIndex(canvas, sourceX, sourceY);
+      if (sourceIndex !== undefined) {
+        pixels[y * nextWidth + x] = canvas.pixels[sourceIndex];
+      }
+    }
+  }
+
+  return { width: nextWidth, height: nextHeight, pixels };
+}
+
+export function scaleCanvasPixels(canvas: PixelCanvas, factor: number): PixelCanvas {
+  const safeFactor = Number.isFinite(factor) && factor > 0 ? factor : 1;
+  const nextWidth = clampCanvasSize(Math.ceil(canvas.width * safeFactor));
+  const nextHeight = clampCanvasSize(Math.ceil(canvas.height * safeFactor));
+  const pixels = Array.from({ length: nextWidth * nextHeight }, (_, index) => {
+    const x = index % nextWidth;
+    const y = Math.floor(index / nextWidth);
+    const sourceX = Math.min(canvas.width - 1, Math.floor((x * canvas.width) / nextWidth));
+    const sourceY = Math.min(canvas.height - 1, Math.floor((y * canvas.height) / nextHeight));
+    return canvas.pixels[sourceY * canvas.width + sourceX] ?? transparentPixel;
+  });
+
+  return { width: nextWidth, height: nextHeight, pixels };
 }
 
 export function drawLine(canvas: PixelCanvas, start: PixelPoint, end: PixelPoint, color: string, thickness: number): PixelCanvas {
@@ -205,6 +243,10 @@ function toIndex(canvas: PixelCanvas, x: number, y: number): number | undefined 
   }
 
   return y * canvas.width + x;
+}
+
+function clampCanvasSize(value: number): number {
+  return Math.max(4, Math.min(512, Math.ceil(value)));
 }
 
 function randomInt(min: number, max: number): number {

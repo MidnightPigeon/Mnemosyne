@@ -34,10 +34,14 @@
     ],
     "windows": {
       "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "headerImage": "installer/nsis-header.bmp",
+        "sidebarImage": "installer/nsis-sidebar.bmp",
         "languages": [
             "English",
             "SimpChinese"
-        ]
+        ],
+        "displayLanguageSelector": true
       }
     }
   }

@@ -1,5 +1,5 @@
 use image::imageops::FilterType;
-use image::{DynamicImage, GenericImageView, ImageBuffer, Rgb};
+use image::{DynamicImage, GenericImageView, ImageBuffer, Rgba};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -18,12 +18,51 @@ pub struct PixelCanvas {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct MelodyNote {
+    pub id: String,
+    pub pitch: u8,
+    pub start: u16,
+    pub duration: u16,
+    pub velocity: u8,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct MelodyTrack {
+    pub id: String,
+    pub name: String,
+    pub color: String,
+    #[serde(default)]
+    pub program: u8,
+    #[serde(default)]
+    pub volume: u8,
+    pub notes: Vec<MelodyNote>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct MelodyClip {
+    pub bpm: u16,
+    #[serde(default)]
+    pub bars: u16,
+    #[serde(default)]
+    pub beats_per_bar: u8,
+    pub beats: u16,
+    pub steps_per_beat: u8,
+    #[serde(default)]
+    pub sustain: bool,
+    pub tracks: Vec<MelodyTrack>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Idea {
     pub id: String,
     pub kind: String,
     pub title: Option<String>,
     pub body: String,
     pub canvas: Option<PixelCanvas>,
+    pub melody: Option<MelodyClip>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -36,6 +75,7 @@ pub struct IdeaInput {
     pub title: String,
     pub body: String,
     pub canvas: Option<PixelCanvas>,
+    pub melody: Option<MelodyClip>,
     pub created_at: Option<String>,
 }
 
@@ -132,6 +172,7 @@ fn save_idea(app: AppHandle, input: IdeaInput) -> Result<Idea, String> {
         title: Some(input.title),
         body: input.body,
         canvas: input.canvas,
+        melody: input.melody,
         created_at,
         updated_at: now,
     };
@@ -171,24 +212,53 @@ fn export_markdown(title: String, body: String) -> Result<Option<String>, String
 }
 
 #[tauri::command]
-fn export_canvas_jpeg(title: String, canvas: PixelCanvas) -> Result<Option<String>, String> {
-    let default_name = format!("{}.jpg", safe_file_stem(&title, "pixel-canvas"));
+fn export_canvas_png(title: String, canvas: PixelCanvas) -> Result<Option<String>, String> {
+    let default_name = format!("{}.png", safe_file_stem(&title, "pixel-canvas"));
     let Some(path) = rfd::FileDialog::new()
-        .set_title("另存为 JPEG 图像")
+        .set_title("另存为 PNG 图像")
         .set_file_name(&default_name)
-        .add_filter("JPEG", &["jpg", "jpeg"])
+        .add_filter("PNG", &["png"])
         .save_file()
     else {
         return Ok(None);
     };
 
     let image = canvas_to_image(&canvas)?;
-    image.save_with_format(&path, image::ImageFormat::Jpeg).map_err(|error| error.to_string())?;
+    image.save_with_format(&path, image::ImageFormat::Png).map_err(|error| error.to_string())?;
     Ok(Some(path.to_string_lossy().to_string()))
 }
 
 #[tauri::command]
-fn import_image_canvas(size: u16, crop: bool) -> Result<Option<PixelCanvas>, String> {
+fn import_midi_file() -> Result<Option<Vec<u8>>, String> {
+    let Some(path) = rfd::FileDialog::new()
+        .set_title("导入 MIDI 文件")
+        .add_filter("MIDI", &["mid", "midi"])
+        .pick_file()
+    else {
+        return Ok(None);
+    };
+
+    fs::read(path).map(Some).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn export_midi_file(title: String, data: Vec<u8>) -> Result<Option<String>, String> {
+    let default_name = format!("{}.mid", safe_file_stem(&title, "melody-clip"));
+    let Some(path) = rfd::FileDialog::new()
+        .set_title("另存为 MIDI")
+        .set_file_name(&default_name)
+        .add_filter("MIDI", &["mid", "midi"])
+        .save_file()
+    else {
+        return Ok(None);
+    };
+
+    fs::write(&path, data).map_err(|error| error.to_string())?;
+    Ok(Some(path.to_string_lossy().to_string()))
+}
+
+#[tauri::command]
+fn import_image_canvas(width: u16, height: u16, crop: bool) -> Result<Option<PixelCanvas>, String> {
     let Some(path) = rfd::FileDialog::new()
         .set_title("导入图片为像素画布")
         .add_filter("Image", &["jpg", "jpeg", "png"])
@@ -198,13 +268,13 @@ fn import_image_canvas(size: u16, crop: bool) -> Result<Option<PixelCanvas>, Str
     };
 
     let image = image::open(path).map_err(|error| error.to_string())?;
-    Ok(Some(image_to_canvas(image, size, crop)?))
+    Ok(Some(image_to_canvas(image, width, height, crop)?))
 }
 
 #[tauri::command]
-fn resize_canvas(canvas: PixelCanvas, size: u16, crop: bool) -> Result<PixelCanvas, String> {
-    let image = DynamicImage::ImageRgb8(canvas_to_image(&canvas)?);
-    image_to_canvas(image, size, crop)
+fn resize_canvas(canvas: PixelCanvas, width: u16, height: u16, crop: bool) -> Result<PixelCanvas, String> {
+    let image = DynamicImage::ImageRgba8(canvas_to_image(&canvas)?);
+    image_to_canvas(image, width, height, crop)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -218,7 +288,9 @@ pub fn run() {
             save_idea,
             delete_idea,
             export_markdown,
-            export_canvas_jpeg,
+            export_canvas_png,
+            import_midi_file,
+            export_midi_file,
             import_image_canvas,
             resize_canvas
         ])
@@ -284,7 +356,7 @@ fn now_iso() -> String {
     chrono::Utc::now().to_rfc3339()
 }
 
-fn canvas_to_image(canvas: &PixelCanvas) -> Result<ImageBuffer<Rgb<u8>, Vec<u8>>, String> {
+fn canvas_to_image(canvas: &PixelCanvas) -> Result<ImageBuffer<Rgba<u8>, Vec<u8>>, String> {
     let expected = canvas.width as usize * canvas.height as usize;
     if canvas.pixels.len() != expected {
         return Err("Canvas pixel count does not match its size.".to_string());
@@ -295,71 +367,97 @@ fn canvas_to_image(canvas: &PixelCanvas) -> Result<ImageBuffer<Rgb<u8>, Vec<u8>>
         let color = parse_hex_color(pixel)?;
         let x = index as u32 % canvas.width as u32;
         let y = index as u32 / canvas.width as u32;
-        image.put_pixel(x, y, Rgb(color));
+        image.put_pixel(x, y, Rgba(color));
     }
 
     Ok(image)
 }
 
-fn image_to_canvas(image: DynamicImage, size: u16, crop: bool) -> Result<PixelCanvas, String> {
-    let safe_size = size.clamp(4, 512);
+fn image_to_canvas(image: DynamicImage, width: u16, height: u16, crop: bool) -> Result<PixelCanvas, String> {
+    let safe_width = width.clamp(4, 512);
+    let safe_height = height.clamp(4, 512);
     let prepared = if crop {
-        center_crop_square(image)
+        center_crop_to_aspect(image, safe_width as u32, safe_height as u32)
     } else {
-        pad_to_square(image)
+        pad_to_aspect(image, safe_width as u32, safe_height as u32)
     };
     let resized = prepared
-        .resize_exact(safe_size as u32, safe_size as u32, FilterType::Nearest)
-        .to_rgb8();
+        .resize_exact(safe_width as u32, safe_height as u32, FilterType::Nearest)
+        .to_rgba8();
 
     let pixels = resized
         .pixels()
-        .map(|pixel| format!("#{:02x}{:02x}{:02x}", pixel[0], pixel[1], pixel[2]))
+        .map(|pixel| {
+            if pixel[3] == 255 {
+                format!("#{:02x}{:02x}{:02x}", pixel[0], pixel[1], pixel[2])
+            } else {
+                format!("#{:02x}{:02x}{:02x}{:02x}", pixel[0], pixel[1], pixel[2], pixel[3])
+            }
+        })
         .collect();
 
     Ok(PixelCanvas {
-        width: safe_size,
-        height: safe_size,
+        width: safe_width,
+        height: safe_height,
         pixels,
     })
 }
 
-fn center_crop_square(image: DynamicImage) -> DynamicImage {
+fn center_crop_to_aspect(image: DynamicImage, target_width: u32, target_height: u32) -> DynamicImage {
     let (width, height) = image.dimensions();
-    let side = width.min(height);
-    let x = (width - side) / 2;
-    let y = (height - side) / 2;
-    image.crop_imm(x, y, side, side)
+    let target_aspect = target_width as f64 / target_height as f64;
+    let source_aspect = width as f64 / height as f64;
+
+    if source_aspect > target_aspect {
+        let crop_width = ((height as f64 * target_aspect).round() as u32).clamp(1, width);
+        let x = (width - crop_width) / 2;
+        image.crop_imm(x, 0, crop_width, height)
+    } else {
+        let crop_height = ((width as f64 / target_aspect).round() as u32).clamp(1, height);
+        let y = (height - crop_height) / 2;
+        image.crop_imm(0, y, width, crop_height)
+    }
 }
 
-fn pad_to_square(image: DynamicImage) -> DynamicImage {
-    let rgb = image.to_rgb8();
-    let (width, height) = rgb.dimensions();
-    let side = width.max(height);
-    let mut padded = ImageBuffer::from_pixel(side, side, Rgb([255, 255, 255]));
-    let x_offset = (side - width) / 2;
-    let y_offset = (side - height) / 2;
+fn pad_to_aspect(image: DynamicImage, target_width: u32, target_height: u32) -> DynamicImage {
+    let rgba = image.to_rgba8();
+    let (width, height) = rgba.dimensions();
+    let target_aspect = target_width as f64 / target_height as f64;
+    let source_aspect = width as f64 / height as f64;
+    let (canvas_width, canvas_height) = if source_aspect > target_aspect {
+        (width, ((width as f64 / target_aspect).ceil() as u32).max(height))
+    } else {
+        (((height as f64 * target_aspect).ceil() as u32).max(width), height)
+    };
+    let mut padded = ImageBuffer::from_pixel(canvas_width, canvas_height, Rgba([0, 0, 0, 0]));
+    let x_offset = (canvas_width - width) / 2;
+    let y_offset = (canvas_height - height) / 2;
 
     for y in 0..height {
         for x in 0..width {
-            let pixel = *rgb.get_pixel(x, y);
+            let pixel = *rgba.get_pixel(x, y);
             padded.put_pixel(x + x_offset, y + y_offset, pixel);
         }
     }
 
-    DynamicImage::ImageRgb8(padded)
+    DynamicImage::ImageRgba8(padded)
 }
 
-fn parse_hex_color(value: &str) -> Result<[u8; 3], String> {
+fn parse_hex_color(value: &str) -> Result<[u8; 4], String> {
     let hex = value.strip_prefix('#').unwrap_or(value);
-    if hex.len() != 6 {
+    if hex.len() != 6 && hex.len() != 8 {
         return Err(format!("Invalid color value: {value}"));
     }
 
     let red = u8::from_str_radix(&hex[0..2], 16).map_err(|error| error.to_string())?;
     let green = u8::from_str_radix(&hex[2..4], 16).map_err(|error| error.to_string())?;
     let blue = u8::from_str_radix(&hex[4..6], 16).map_err(|error| error.to_string())?;
-    Ok([red, green, blue])
+    let alpha = if hex.len() == 8 {
+        u8::from_str_radix(&hex[6..8], 16).map_err(|error| error.to_string())?
+    } else {
+        255
+    };
+    Ok([red, green, blue, alpha])
 }
 
 fn safe_file_stem(value: &str, fallback: &str) -> String {

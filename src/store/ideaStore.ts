@@ -6,11 +6,13 @@ import {
   listIdeas,
   upsertIdea
 } from "../data/ideaRepository";
-import type { Idea, IdeaKind, PixelCanvas, StorageSettings } from "../types/idea";
+import { createDefaultMelody } from "../lib/midi";
+import type { Idea, IdeaKind, MelodyClip, PixelCanvas, StorageSettings } from "../types/idea";
 
 type CreateIdeaOptions =
   | { kind: "markdown" }
-  | { kind: "pixel"; width: number; height: number };
+  | { kind: "pixel"; width: number; height: number }
+  | { kind: "melody" };
 
 type IdeaState = {
   allIdeas: Idea[];
@@ -19,6 +21,7 @@ type IdeaState = {
   draftTitle: string;
   draftBody: string;
   draftCanvas?: PixelCanvas;
+  draftMelody?: MelodyClip;
   query: string;
   storage?: StorageSettings;
   isLoading: boolean;
@@ -32,6 +35,7 @@ type IdeaState = {
   setDraftTitle: (title: string) => void;
   setDraftBody: (body: string) => void;
   setDraftCanvas: (canvas: PixelCanvas) => void;
+  setDraftMelody: (melody: MelodyClip) => void;
   saveSelectedIdea: () => Promise<void>;
   setQuery: (query: string) => void;
   removeSelectedIdea: () => Promise<void>;
@@ -65,6 +69,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
         draftTitle: selected?.title ?? "新文本记录",
         draftBody: selected?.body ?? initialMarkdown,
         draftCanvas: selected?.canvas,
+        draftMelody: selected?.melody,
         lastSavedAt: selected?.updatedAt,
         isDirty: false,
         isLoading: false
@@ -85,12 +90,14 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
 
     const now = new Date().toISOString();
     const canvas = options.kind === "pixel" ? createCanvas(options.width, options.height) : undefined;
+    const melody = options.kind === "melody" ? createDefaultMelody() : undefined;
     const idea: Idea = {
       id: crypto.randomUUID(),
       kind: options.kind,
-      title: options.kind === "markdown" ? "新文本记录" : "未命名像素画布",
+      title: defaultTitle(options.kind),
       body: options.kind === "markdown" ? initialMarkdown : "",
       canvas,
+      melody,
       createdAt: now,
       updatedAt: now
     };
@@ -100,6 +107,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
       draftTitle: idea.title,
       draftBody: idea.body,
       draftCanvas: idea.canvas,
+      draftMelody: idea.melody,
       lastSavedAt: undefined,
       isDirty: true
     });
@@ -123,6 +131,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
       draftTitle: selected.title,
       draftBody: selected.body,
       draftCanvas: selected.canvas,
+      draftMelody: selected.melody,
       lastSavedAt: selected.updatedAt,
       isDirty: false
     });
@@ -136,14 +145,17 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
   setDraftCanvas(canvas) {
     set({ draftCanvas: canvas, isDirty: true });
   },
+  setDraftMelody(melody) {
+    set({ draftMelody: melody, isDirty: true });
+  },
   async saveSelectedIdea() {
-    const { selectedIdeaId, draftTitle, draftBody, draftCanvas, allIdeas, isDirty } = get();
+    const { selectedIdeaId, draftTitle, draftBody, draftCanvas, draftMelody, allIdeas, isDirty } = get();
     if (!selectedIdeaId || !isDirty) {
       return;
     }
 
     const current = allIdeas.find((idea) => idea.id === selectedIdeaId);
-    const kind: IdeaKind = current?.kind ?? (draftCanvas ? "pixel" : "markdown");
+    const kind: IdeaKind = current?.kind ?? (draftMelody ? "melody" : draftCanvas ? "pixel" : "markdown");
 
     set({ isSaving: true, error: undefined });
 
@@ -151,9 +163,10 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
       const saved = await upsertIdea({
         id: selectedIdeaId,
         kind,
-        title: draftTitle.trim() || (kind === "pixel" ? "未命名像素画布" : "未命名文本记录"),
+        title: draftTitle.trim() || defaultTitle(kind),
         body: draftBody,
         canvas: kind === "pixel" ? draftCanvas : undefined,
+        melody: kind === "melody" ? draftMelody : undefined,
         createdAt: current?.createdAt
       });
       const allIdeasNext = [saved, ...allIdeas.filter((idea) => idea.id !== saved.id)].sort(sortByUpdatedAt);
@@ -165,6 +178,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
         draftTitle: saved.title,
         draftBody: saved.body,
         draftCanvas: saved.canvas,
+        draftMelody: saved.melody,
         isSaving: false,
         isDirty: false,
         lastSavedAt: saved.updatedAt
@@ -200,6 +214,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
         draftTitle: selected?.title ?? "新文本记录",
         draftBody: selected?.body ?? initialMarkdown,
         draftCanvas: selected?.canvas,
+        draftMelody: selected?.melody,
         lastSavedAt: selected?.updatedAt,
         isDirty: false
       }));
@@ -240,8 +255,18 @@ function createCanvas(width: number, height: number): PixelCanvas {
   return {
     width: safeWidth,
     height: safeHeight,
-    pixels: Array.from({ length: safeWidth * safeHeight }, () => "#ffffff")
+    pixels: Array.from({ length: safeWidth * safeHeight }, () => "#00000000")
   };
+}
+
+function defaultTitle(kind: IdeaKind): string {
+  if (kind === "pixel") {
+    return "未命名像素画布";
+  }
+  if (kind === "melody") {
+    return "未命名旋律片段";
+  }
+  return "新文本记录";
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -260,6 +285,9 @@ function filterIdeas(ideas: Idea[], query: string): Idea[] {
 
   return ideas.filter((idea) => {
     const canvasText = idea.canvas ? `${idea.canvas.width} ${idea.canvas.height}` : "";
-    return `${idea.kind} ${idea.title} ${idea.body} ${canvasText}`.toLocaleLowerCase().includes(normalized);
+    const melodyText = idea.melody
+      ? `${idea.melody.bpm} ${idea.melody.beats} ${idea.melody.tracks.map((track) => track.name).join(" ")}`
+      : "";
+    return `${idea.kind} ${idea.title} ${idea.body} ${canvasText} ${melodyText}`.toLocaleLowerCase().includes(normalized);
   });
 }
