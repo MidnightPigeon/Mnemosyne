@@ -92,6 +92,8 @@ type ThemeKey = keyof typeof themes;
 type LanguageKey = "zh" | "en";
 
 const pixelScaleFactors = [0.1, 0.25, 0.5, 0.75, 1.5, 2, 3, 4];
+const melodyMinPitch = 21; // A0，标准 88 键最低音。
+const melodyMaxPitch = 108; // C8，覆盖常见小提琴高音写作上沿。
 
 const authorUrl = "https://github.com/MidnightPigeon";
 
@@ -725,7 +727,7 @@ function MelodyEditor({
   const rowHeight = Math.round(22 * rollZoom);
   const timelineHeight = Math.round(24 * rollZoom);
   const barHeight = Math.round(28 * rollZoom);
-  const pitches = useMemo(() => Array.from({ length: 37 }, (_, index) => 84 - index), []);
+  const pitches = useMemo(() => Array.from({ length: melodyMaxPitch - melodyMinPitch + 1 }, (_, index) => melodyMaxPitch - index), []);
   const activeTrack = clip.tracks[Math.min(activeTrackIndex, clip.tracks.length - 1)] ?? clip.tracks[0];
 
   useEffect(() => {
