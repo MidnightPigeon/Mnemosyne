@@ -1,5 +1,5 @@
 use image::imageops::FilterType;
-use image::{DynamicImage, GenericImageView, ImageBuffer, Rgba};
+use image::{DynamicImage, GenericImageView, ImageBuffer, Rgb, Rgba};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -229,6 +229,23 @@ fn export_canvas_png(title: String, canvas: PixelCanvas) -> Result<Option<String
 }
 
 #[tauri::command]
+fn export_canvas_jpg(title: String, canvas: PixelCanvas) -> Result<Option<String>, String> {
+    let default_name = format!("{}.jpg", safe_file_stem(&title, "pixel-canvas"));
+    let Some(path) = rfd::FileDialog::new()
+        .set_title("另存为 JPG 图像")
+        .set_file_name(&default_name)
+        .add_filter("JPG", &["jpg", "jpeg"])
+        .save_file()
+    else {
+        return Ok(None);
+    };
+
+    let image = flatten_canvas_to_rgb(&canvas)?;
+    image.save_with_format(&path, image::ImageFormat::Jpeg).map_err(|error| error.to_string())?;
+    Ok(Some(path.to_string_lossy().to_string()))
+}
+
+#[tauri::command]
 fn import_midi_file() -> Result<Option<Vec<u8>>, String> {
     let Some(path) = rfd::FileDialog::new()
         .set_title("导入 MIDI 文件")
@@ -255,6 +272,35 @@ fn export_midi_file(title: String, data: Vec<u8>) -> Result<Option<String>, Stri
 
     fs::write(&path, data).map_err(|error| error.to_string())?;
     Ok(Some(path.to_string_lossy().to_string()))
+}
+
+#[tauri::command]
+fn export_wav_file(title: String, data: Vec<u8>) -> Result<Option<String>, String> {
+    let default_name = format!("{}.wav", safe_file_stem(&title, "melody-clip"));
+    let Some(path) = rfd::FileDialog::new()
+        .set_title("另存为 WAV")
+        .set_file_name(&default_name)
+        .add_filter("WAV", &["wav"])
+        .save_file()
+    else {
+        return Ok(None);
+    };
+
+    fs::write(&path, data).map_err(|error| error.to_string())?;
+    Ok(Some(path.to_string_lossy().to_string()))
+}
+
+#[tauri::command]
+fn import_image_file() -> Result<Option<Vec<u8>>, String> {
+    let Some(path) = rfd::FileDialog::new()
+        .set_title("导入图片为像素画布")
+        .add_filter("Image", &["jpg", "jpeg", "png"])
+        .pick_file()
+    else {
+        return Ok(None);
+    };
+
+    fs::read(path).map(Some).map_err(|error| error.to_string())
 }
 
 #[tauri::command]
@@ -289,8 +335,11 @@ pub fn run() {
             delete_idea,
             export_markdown,
             export_canvas_png,
+            export_canvas_jpg,
             import_midi_file,
             export_midi_file,
+            export_wav_file,
+            import_image_file,
             import_image_canvas,
             resize_canvas
         ])
@@ -368,6 +417,29 @@ fn canvas_to_image(canvas: &PixelCanvas) -> Result<ImageBuffer<Rgba<u8>, Vec<u8>
         let x = index as u32 % canvas.width as u32;
         let y = index as u32 / canvas.width as u32;
         image.put_pixel(x, y, Rgba(color));
+    }
+
+    Ok(image)
+}
+
+fn flatten_canvas_to_rgb(canvas: &PixelCanvas) -> Result<ImageBuffer<Rgb<u8>, Vec<u8>>, String> {
+    let expected = canvas.width as usize * canvas.height as usize;
+    if canvas.pixels.len() != expected {
+        return Err("Canvas pixel count does not match its size.".to_string());
+    }
+
+    let mut image = ImageBuffer::new(canvas.width as u32, canvas.height as u32);
+    for (index, pixel) in canvas.pixels.iter().enumerate() {
+        let [red, green, blue, alpha] = parse_hex_color(pixel)?;
+        let opacity = alpha as f32 / 255.0;
+        let flattened = [
+            ((red as f32 * opacity) + (255.0 * (1.0 - opacity))).round() as u8,
+            ((green as f32 * opacity) + (255.0 * (1.0 - opacity))).round() as u8,
+            ((blue as f32 * opacity) + (255.0 * (1.0 - opacity))).round() as u8,
+        ];
+        let x = index as u32 % canvas.width as u32;
+        let y = index as u32 / canvas.width as u32;
+        image.put_pixel(x, y, Rgb(flattened));
     }
 
     Ok(image)

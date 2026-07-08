@@ -1,5 +1,12 @@
 import type { MelodyClip, MelodyNote, MelodyTrack } from "../types/idea";
 
+declare global {
+  interface Window {
+    webkitAudioContext?: typeof AudioContext;
+    webkitOfflineAudioContext?: typeof OfflineAudioContext;
+  }
+}
+
 const ticksPerQuarter = 480;
 const defaultStepsPerBeat = 4;
 const defaultBeatsPerBar = 4;
@@ -281,6 +288,30 @@ export function previewMelodyNote(pitch: number, program = 0, durationSteps = 1,
   return stop;
 }
 
+export async function renderMelodyWav(clip: MelodyClip): Promise<Uint8Array> {
+  const normalized = normalizeMelodyClip(clip);
+  const sampleRate = 44_100;
+  const secondsPerStep = 60 / normalized.bpm / normalized.stepsPerBeat;
+  const totalSteps = normalized.bars * normalized.beatsPerBar * normalized.stepsPerBeat;
+  const duration = Math.max(1, totalSteps * secondsPerStep + 1.2);
+  const OfflineContextClass = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  const context = new OfflineContextClass(2, Math.ceil(duration * sampleRate), sampleRate);
+  const programs = [...new Set(normalized.tracks.map((track) => track.program))];
+
+  await Promise.all(programs.map((program) => loadInstrumentSamples(context, program)));
+
+  const oscillators: OscillatorNode[] = [];
+  const sources: AudioBufferSourceNode[] = [];
+  for (const track of normalized.tracks) {
+    for (const note of track.notes) {
+      await scheduleOfflineNote(context, oscillators, sources, note, track.program, track.volume, normalized.sustain, note.start * secondsPerStep, secondsPerStep);
+    }
+  }
+
+  const rendered = await context.startRendering();
+  return encodeWav(rendered);
+}
+
 function writeTempoTrack(bpm: number): number[] {
   const tempo = Math.round(60_000_000 / clamp(bpm || 120, 40, 240));
   return [0x00, 0xff, 0x51, 0x03, (tempo >> 16) & 0xff, (tempo >> 8) & 0xff, tempo & 0xff, 0x00, 0xff, 0x2f, 0x00];
@@ -395,7 +426,7 @@ function parseTrack(
 }
 
 function scheduleNote(
-  context: AudioContext,
+  context: BaseAudioContext,
   oscillators: OscillatorNode[],
   sources: AudioBufferSourceNode[],
   note: MelodyNote,
@@ -446,7 +477,52 @@ function scheduleNote(
   scheduleFallbackOscillator(context, oscillators, note, program, trackVolume, sustain, noteStart, secondsPerStep);
 }
 
-async function loadInstrumentSamples(context: AudioContext, program: number): Promise<void> {
+async function scheduleOfflineNote(
+  context: OfflineAudioContext,
+  oscillators: OscillatorNode[],
+  sources: AudioBufferSourceNode[],
+  note: MelodyNote,
+  program: number,
+  trackVolume: number,
+  sustain: boolean,
+  noteStart: number,
+  secondsPerStep: number
+) {
+  const sample = findNearestSample(program, note.pitch);
+  const buffer = await sampleCache.get(sample.cacheKey);
+  if (!buffer) {
+    scheduleFallbackOscillator(context, oscillators, note, program, trackVolume, sustain, noteStart, secondsPerStep);
+    return;
+  }
+
+  const noteEnd = noteStart + Math.max(1, note.duration) * secondsPerStep;
+  const audibleEnd = sustain ? noteEnd + Math.min(0.08, secondsPerStep * 0.35) : Math.min(noteEnd, noteStart + 0.28);
+  const volume = clamp(note.velocity || 90, 1, 127) / 127;
+  const trackGain = clamp(trackVolume || defaultTrackVolume, 1, 240) / defaultTrackVolume;
+  const instrumentGain = gainForProgram(program);
+  const master = context.createGain();
+  const peakGain = Math.max(0.015, volume * trackGain * instrumentGain);
+  master.gain.setValueAtTime(0.0001, noteStart);
+  master.gain.linearRampToValueAtTime(peakGain, noteStart + 0.003);
+  master.gain.setValueAtTime(peakGain, Math.max(noteStart + 0.004, audibleEnd - (sustain ? 0.012 : 0.035)));
+  master.gain.linearRampToValueAtTime(0.0001, audibleEnd + (sustain ? 0.035 : 0.06));
+  master.connect(context.destination);
+
+  const source = context.createBufferSource();
+  source.buffer = buffer;
+  source.playbackRate.setValueAtTime(2 ** ((note.pitch - sample.rootPitch) / 12), noteStart);
+  if (sustain && note.duration > 1 && buffer.duration > 0.12) {
+    source.loop = true;
+    source.loopStart = Math.min(0.06, buffer.duration * 0.25);
+    source.loopEnd = Math.max(source.loopStart + 0.04, Math.min(buffer.duration - 0.01, buffer.duration * 0.92));
+  }
+  source.connect(master);
+  source.start(noteStart, Math.min(0.025, buffer.duration * 0.1));
+  source.stop(audibleEnd + 0.08);
+  sources.push(source);
+}
+
+async function loadInstrumentSamples(context: BaseAudioContext, program: number): Promise<void> {
   const instrument = instrumentForProgram(program);
   await Promise.all(
     sampleRoots.map(async (root) => {
@@ -510,7 +586,7 @@ function gainForProgram(program: number): number {
 }
 
 function scheduleFallbackOscillator(
-  context: AudioContext,
+  context: BaseAudioContext,
   oscillators: OscillatorNode[],
   note: MelodyNote,
   program: number,
@@ -548,7 +624,61 @@ function scheduleFallbackOscillator(
     oscillator.connect(layerGain).connect(filter);
     oscillator.start(noteStart);
     oscillator.stop(noteEnd + timbre.release + 0.04);
-    oscillators.push(oscillator);
+  oscillators.push(oscillator);
+  }
+}
+
+function encodeWav(buffer: AudioBuffer): Uint8Array {
+  const channels = Math.min(2, buffer.numberOfChannels);
+  const sampleRate = buffer.sampleRate;
+  const frameCount = buffer.length;
+  const dataSize = frameCount * channels * 2;
+  const bytes = new Uint8Array(44 + dataSize);
+  const view = new DataView(bytes.buffer);
+  let offset = 0;
+
+  writeAsciiToView(view, offset, "RIFF");
+  offset += 4;
+  view.setUint32(offset, 36 + dataSize, true);
+  offset += 4;
+  writeAsciiToView(view, offset, "WAVE");
+  offset += 4;
+  writeAsciiToView(view, offset, "fmt ");
+  offset += 4;
+  view.setUint32(offset, 16, true);
+  offset += 4;
+  view.setUint16(offset, 1, true);
+  offset += 2;
+  view.setUint16(offset, channels, true);
+  offset += 2;
+  view.setUint32(offset, sampleRate, true);
+  offset += 4;
+  view.setUint32(offset, sampleRate * channels * 2, true);
+  offset += 4;
+  view.setUint16(offset, channels * 2, true);
+  offset += 2;
+  view.setUint16(offset, 16, true);
+  offset += 2;
+  writeAsciiToView(view, offset, "data");
+  offset += 4;
+  view.setUint32(offset, dataSize, true);
+  offset += 4;
+
+  const channelData = Array.from({ length: channels }, (_, channel) => buffer.getChannelData(channel));
+  for (let index = 0; index < frameCount; index += 1) {
+    for (let channel = 0; channel < channels; channel += 1) {
+      const sample = Math.max(-1, Math.min(1, channelData[channel][index] || 0));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+      offset += 2;
+    }
+  }
+
+  return bytes;
+}
+
+function writeAsciiToView(view: DataView, offset: number, value: string) {
+  for (let index = 0; index < value.length; index += 1) {
+    view.setUint8(offset + index, value.charCodeAt(index));
   }
 }
 

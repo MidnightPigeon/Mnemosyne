@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import {
+  exportCanvasJpg,
   exportCanvasPng,
   exportMarkdown,
   exportMidiFile,
-  importImageCanvas,
+  exportWavFile,
+  importImageFile,
   importMidiFile
 } from "../data/ideaRepository";
 import { renderMarkdown } from "../lib/markdown";
@@ -15,6 +17,7 @@ import {
   parseMidi,
   playMelody,
   previewMelodyNote,
+  renderMelodyWav,
   writeMidi
 } from "../lib/midi";
 import {
@@ -113,6 +116,10 @@ const uiText = {
     showHelp: "显示提示",
     save: "保存",
     export: "导出",
+    exportJpg: "导出 JPG",
+    exportPng: "导出 PNG",
+    exportMidi: "导出 MIDI",
+    exportWav: "导出 WAV",
     delete: "删除",
     deleteConfirm: "确定删除当前灵感吗？这个操作会删除对应的本地 JSON 文件。",
     textTitle: "文本记录名称",
@@ -146,9 +153,10 @@ const uiText = {
     squareArea: "方形区域",
     thickness: "粗细",
     filled: "实心",
-    centerCrop: "居中裁剪",
     showGrid: "显示网格",
     importImage: "导入图片",
+    importApply: "导入到画布",
+    importCancel: "取消导入",
     cropBounds: "调整边界",
     scaleFactor: "倍率",
     scalePixels: "按倍率缩放",
@@ -205,6 +213,10 @@ const uiText = {
     showHelp: "Show help",
     save: "Save",
     export: "Export",
+    exportJpg: "Export JPG",
+    exportPng: "Export PNG",
+    exportMidi: "Export MIDI",
+    exportWav: "Export WAV",
     delete: "Delete",
     deleteConfirm: "Delete this idea? This will remove its local JSON file.",
     textTitle: "Text record name",
@@ -238,9 +250,10 @@ const uiText = {
     squareArea: "Square area",
     thickness: "Thickness",
     filled: "Filled",
-    centerCrop: "Center crop",
     showGrid: "Show grid",
     importImage: "Import image",
+    importApply: "Import to canvas",
+    importCancel: "Cancel import",
     cropBounds: "Resize bounds",
     scaleFactor: "Scale",
     scalePixels: "Scale pixels",
@@ -410,9 +423,23 @@ export function App() {
       return;
     }
 
+    if (selectedDraft.kind === "pixel" && draftCanvas) {
+      await exportCanvasJpg(draftTitle, draftCanvas);
+      return;
+    }
+  }
+
+  async function handleExportPng() {
     if (draftCanvas) {
       await exportCanvasPng(draftTitle, draftCanvas);
     }
+  }
+
+  async function handleExportWav() {
+    if (!draftMelody) {
+      return;
+    }
+    await exportWavFile(draftTitle, await renderMelodyWav(draftMelody));
   }
 
   return (
@@ -551,9 +578,29 @@ export function App() {
             <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void saveSelectedIdea()} type="button">
               {ui.save}
             </button>
-            <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleExport()} type="button">
-              {ui.export}
-            </button>
+            {selectedDraft?.kind === "melody" ? (
+              <>
+                <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleExport()} type="button">
+                  {ui.exportMidi}
+                </button>
+                <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleExportWav()} type="button">
+                  {ui.exportWav}
+                </button>
+              </>
+            ) : selectedDraft?.kind === "pixel" ? (
+              <>
+                <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleExport()} type="button">
+                  {ui.exportJpg}
+                </button>
+                <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleExportPng()} type="button">
+                  {ui.exportPng}
+                </button>
+              </>
+            ) : (
+              <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleExport()} type="button">
+                {ui.export}
+              </button>
+            )}
             <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleDelete()} type="button">
               {ui.delete}
             </button>
@@ -1108,7 +1155,7 @@ function PixelEditor({
   const [targetWidth, setTargetWidth] = useState(canvas?.width ?? 64);
   const [targetHeight, setTargetHeight] = useState(canvas?.height ?? 64);
   const [scaleFactor, setScaleFactor] = useState(1);
-  const [cropImage, setCropImage] = useState(true);
+  const [importDraft, setImportDraft] = useState<ImageImportDraft | null>(null);
   const [dragStart, setDragStart] = useState<PixelPoint | null>(null);
   const [hoverPoint, setHoverPoint] = useState<PixelPoint | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -1203,10 +1250,43 @@ function PixelEditor({
   }
 
   async function handleImportImage() {
-    const imported = await importImageCanvas(targetWidth, targetHeight, cropImage);
-    if (imported) {
-      onCanvasChange(imported);
+    const bytes = await importImageFile();
+    if (!bytes) {
+      return;
     }
+    const blob = new Blob([new Uint8Array(bytes)]);
+    const url = URL.createObjectURL(blob);
+    const image = await loadImageElement(url);
+    setImportDraft((current) => {
+      if (current) {
+        URL.revokeObjectURL(current.url);
+      }
+      return {
+        url,
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+        cropScale: 1,
+        cropX: 0.5,
+        cropY: 0.5
+      };
+    });
+  }
+
+  async function applyImageImport() {
+    if (!importDraft) {
+      return;
+    }
+    const imported = await cropImageDraftToCanvas(importDraft, targetWidth, targetHeight);
+    URL.revokeObjectURL(importDraft.url);
+    setImportDraft(null);
+    onCanvasChange(imported);
+  }
+
+  function cancelImageImport() {
+    if (importDraft) {
+      URL.revokeObjectURL(importDraft.url);
+    }
+    setImportDraft(null);
   }
 
   function handleCropCanvas() {
@@ -1262,10 +1342,6 @@ function PixelEditor({
           </label>
         ) : null}
         <label className="flex items-center gap-2 text-sm">
-          <input checked={cropImage} onChange={(event) => setCropImage(event.target.checked)} type="checkbox" />
-          {ui.centerCrop}
-        </label>
-        <label className="flex items-center gap-2 text-sm">
           <input checked={showPixelGrid} onChange={(event) => setShowPixelGrid(event.target.checked)} type="checkbox" />
           {ui.showGrid}
         </label>
@@ -1312,28 +1388,41 @@ function PixelEditor({
 
       <div className="flex min-h-0 flex-1">
         <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-6" onMouseLeave={() => { setIsDragging(false); setHoverPoint(null); }}>
-          <div
-            className="inline-grid border border-[#9badbd] bg-white bg-[linear-gradient(45deg,#d9e3ec_25%,transparent_25%),linear-gradient(-45deg,#d9e3ec_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#d9e3ec_75%),linear-gradient(-45deg,transparent_75%,#d9e3ec_75%)] bg-[length:16px_16px] bg-[position:0_0,0_8px,8px_-8px,-8px_0] shadow-sm"
-            style={{ gridTemplateColumns: `repeat(${canvas.width}, ${pixelSize}px)`, gridTemplateRows: `repeat(${canvas.height}, ${pixelSize}px)` }}
-          >
-            {(previewCanvas ?? canvas).pixels.map((pixel, index) => (
-              <button
-                aria-label={`pixel-${index}`}
-                className={showPixelGrid ? "border border-[#d8e1ea]" : "border-0"}
-                key={index}
-                onMouseDown={() => handlePointerDown(index)}
-                onMouseEnter={() => handlePointerEnter(index)}
-                onMouseUp={() => handlePointerUp(index)}
-                style={{
-                  backgroundColor: pixel,
-                  boxShadow: cursorPreviewIndices.has(index) ? "inset 0 0 0 2px rgba(36, 91, 130, 0.9)" : undefined,
-                  width: pixelSize,
-                  height: pixelSize
-                }}
-                type="button"
-              />
-            ))}
-          </div>
+          {importDraft ? (
+            <ImageImportPanel
+              draft={importDraft}
+              onApply={() => void applyImageImport()}
+              onCancel={cancelImageImport}
+              onDraftChange={setImportDraft}
+              targetHeight={targetHeight}
+              targetWidth={targetWidth}
+              theme={theme}
+              ui={ui}
+            />
+          ) : (
+            <div
+              className="inline-grid border border-[#9badbd] bg-white bg-[linear-gradient(45deg,#d9e3ec_25%,transparent_25%),linear-gradient(-45deg,#d9e3ec_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#d9e3ec_75%),linear-gradient(-45deg,transparent_75%,#d9e3ec_75%)] bg-[length:16px_16px] bg-[position:0_0,0_8px,8px_-8px,-8px_0] shadow-sm"
+              style={{ gridTemplateColumns: `repeat(${canvas.width}, ${pixelSize}px)`, gridTemplateRows: `repeat(${canvas.height}, ${pixelSize}px)` }}
+            >
+              {(previewCanvas ?? canvas).pixels.map((pixel, index) => (
+                <button
+                  aria-label={`pixel-${index}`}
+                  className={showPixelGrid ? "border border-[#d8e1ea]" : "border-0"}
+                  key={index}
+                  onMouseDown={() => handlePointerDown(index)}
+                  onMouseEnter={() => handlePointerEnter(index)}
+                  onMouseUp={() => handlePointerUp(index)}
+                  style={{
+                    backgroundColor: pixel,
+                    boxShadow: cursorPreviewIndices.has(index) ? "inset 0 0 0 2px rgba(36, 91, 130, 0.9)" : undefined,
+                    width: pixelSize,
+                    height: pixelSize
+                  }}
+                  type="button"
+                />
+              ))}
+            </div>
+          )}
         </div>
         <aside className={`flex w-24 shrink-0 flex-col items-center border-l ${theme.border} ${theme.panel} px-3 py-4`}>
           <span className={`mb-3 text-xs ${theme.muted}`}>{ui.palette}</span>
@@ -1369,6 +1458,165 @@ function ToolSelect({ tool, onToolChange, theme, ui }: { tool: PixelTool; onTool
           {ui.tools[value]}
         </button>
       ))}
+    </div>
+  );
+}
+
+type ImageImportDraft = {
+  url: string;
+  width: number;
+  height: number;
+  cropScale: number;
+  cropX: number;
+  cropY: number;
+};
+
+type ImportDragState = {
+  mode: "move" | "resize";
+  startClientX: number;
+  startClientY: number;
+  startPointerX: number;
+  startPointerY: number;
+  startCrop: { x: number; y: number; width: number; height: number };
+};
+
+const cropHandles = [
+  { key: "nw", className: "-left-1.5 -top-1.5 cursor-nwse-resize" },
+  { key: "n", className: "left-1/2 -top-1.5 -translate-x-1/2 cursor-ns-resize" },
+  { key: "ne", className: "-right-1.5 -top-1.5 cursor-nesw-resize" },
+  { key: "e", className: "-right-1.5 top-1/2 -translate-y-1/2 cursor-ew-resize" },
+  { key: "se", className: "-bottom-1.5 -right-1.5 cursor-nwse-resize" },
+  { key: "s", className: "-bottom-1.5 left-1/2 -translate-x-1/2 cursor-ns-resize" },
+  { key: "sw", className: "-bottom-1.5 -left-1.5 cursor-nesw-resize" },
+  { key: "w", className: "-left-1.5 top-1/2 -translate-y-1/2 cursor-ew-resize" }
+];
+
+function ImageImportPanel({
+  draft,
+  onApply,
+  onCancel,
+  onDraftChange,
+  targetHeight,
+  targetWidth,
+  theme,
+  ui
+}: {
+  draft: ImageImportDraft;
+  onApply: () => void;
+  onCancel: () => void;
+  onDraftChange: (draft: ImageImportDraft) => void;
+  targetHeight: number;
+  targetWidth: number;
+  theme: (typeof themes)[ThemeKey];
+  ui: UiCopy;
+}) {
+  const dragRef = useRef<ImportDragState | null>(null);
+  const crop = getImageCropRect(draft, targetWidth, targetHeight);
+  const maxPreviewWidth = 420;
+  const maxPreviewHeight = 420;
+  const previewScale = Math.min(maxPreviewWidth / draft.width, maxPreviewHeight / draft.height, 1);
+  const previewWidth = Math.max(1, Math.round(draft.width * previewScale));
+  const previewHeight = Math.max(1, Math.round(draft.height * previewScale));
+  const scaleX = previewWidth / draft.width;
+  const scaleY = previewHeight / draft.height;
+  const cropStyle = {
+    left: crop.x * scaleX,
+    top: crop.y * scaleY,
+    width: crop.width * scaleX,
+    height: crop.height * scaleY
+  };
+
+  function startDrag(event: ReactPointerEvent, mode: "move" | "resize") {
+    event.preventDefault();
+    event.stopPropagation();
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    const stage = (event.currentTarget as HTMLElement).closest("[data-crop-stage]") as HTMLElement | null;
+    const stageRect = stage?.getBoundingClientRect();
+    dragRef.current = {
+      mode,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startPointerX: stageRect ? (event.clientX - stageRect.left) / scaleX : crop.x + crop.width / 2,
+      startPointerY: stageRect ? (event.clientY - stageRect.top) / scaleY : crop.y + crop.height / 2,
+      startCrop: crop
+    };
+  }
+
+  function updateDrag(event: ReactPointerEvent) {
+    const state = dragRef.current;
+    if (!state) {
+      return;
+    }
+
+    const deltaX = (event.clientX - state.startClientX) / scaleX;
+    const deltaY = (event.clientY - state.startClientY) / scaleY;
+
+    if (state.mode === "move") {
+      onDraftChange(draftFromCropRect(draft, targetWidth, targetHeight, {
+        ...state.startCrop,
+        x: state.startCrop.x + deltaX,
+        y: state.startCrop.y + deltaY
+      }));
+      return;
+    }
+
+    const centerX = state.startCrop.x + state.startCrop.width / 2;
+    const centerY = state.startCrop.y + state.startCrop.height / 2;
+    const pointerX = state.startPointerX + deltaX;
+    const pointerY = state.startPointerY + deltaY;
+    const aspect = Math.max(0.01, targetWidth / targetHeight);
+    const base = getBaseImageCropSize(draft, targetWidth, targetHeight);
+    const widthFromX = Math.abs(pointerX - centerX) * 2;
+    const widthFromY = Math.abs(pointerY - centerY) * 2 * aspect;
+    const nextWidth = Math.max(8, Math.min(base.width, Math.max(widthFromX, widthFromY)));
+    const nextHeight = nextWidth / aspect;
+    onDraftChange(draftFromCropRect(draft, targetWidth, targetHeight, {
+      x: centerX - nextWidth / 2,
+      y: centerY - nextHeight / 2,
+      width: nextWidth,
+      height: nextHeight
+    }));
+  }
+
+  function endDrag(event: ReactPointerEvent) {
+    if (dragRef.current) {
+      (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
+    }
+    dragRef.current = null;
+  }
+
+  return (
+    <div className={`max-w-[560px] rounded-md border ${theme.border} ${theme.panel} p-4 shadow-sm`}>
+      <div className="relative overflow-hidden rounded border border-[#9badbd] bg-[#17212b]" data-crop-stage>
+        <img alt="" className="block object-contain" src={draft.url} style={{ width: previewWidth, height: previewHeight }} />
+        <div
+          className="absolute cursor-move touch-none border-2 border-white shadow-[0_0_0_9999px_rgba(0,0,0,0.42),0_0_0_1px_rgba(36,91,130,0.9)_inset]"
+          onPointerDown={(event) => startDrag(event, "move")}
+          onPointerMove={updateDrag}
+          onPointerCancel={endDrag}
+          onPointerUp={endDrag}
+          style={cropStyle}
+        >
+          {cropHandles.map((handle) => (
+            <span
+              className={`absolute h-3 w-3 touch-none rounded-full border border-[#245b82] bg-white ${handle.className}`}
+              key={handle.key}
+              onPointerDown={(event) => startDrag(event, "resize")}
+              onPointerMove={updateDrag}
+              onPointerCancel={endDrag}
+              onPointerUp={endDrag}
+            />
+          ))}
+        </div>
+      </div>
+      <div className="mt-4 flex justify-end gap-2">
+        <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={onCancel} type="button">
+          {ui.importCancel}
+        </button>
+        <button className={`h-9 rounded-md px-3 text-sm font-medium ${theme.primary}`} onClick={onApply} type="button">
+          {ui.importApply}
+        </button>
+      </div>
     </div>
   );
 }
@@ -1474,6 +1722,97 @@ function pointToIndexSafe(canvas: PixelCanvas, x: number, y: number): number | u
     return undefined;
   }
   return y * canvas.width + x;
+}
+
+function getImageCropRect(draft: ImageImportDraft, targetWidth: number, targetHeight: number) {
+  const base = getBaseImageCropSize(draft, targetWidth, targetHeight);
+  let width = base.width;
+  let height = base.height;
+
+  width = Math.max(1, width * draft.cropScale);
+  height = Math.max(1, height * draft.cropScale);
+
+  return {
+    x: (draft.width - width) * draft.cropX,
+    y: (draft.height - height) * draft.cropY,
+    width,
+    height
+  };
+}
+
+function getBaseImageCropSize(draft: Pick<ImageImportDraft, "width" | "height">, targetWidth: number, targetHeight: number) {
+  const aspect = Math.max(0.01, targetWidth / targetHeight);
+  let width = draft.width;
+  let height = width / aspect;
+  if (height > draft.height) {
+    height = draft.height;
+    width = height * aspect;
+  }
+  return { width, height };
+}
+
+function draftFromCropRect(draft: ImageImportDraft, targetWidth: number, targetHeight: number, rect: { x: number; y: number; width: number; height: number }): ImageImportDraft {
+  const base = getBaseImageCropSize(draft, targetWidth, targetHeight);
+  const safeWidth = clampNumber(rect.width, 8, base.width);
+  const safeHeight = clampNumber(rect.height, 8, base.height);
+  const cropScale = clampNumber(Math.min(safeWidth / base.width, safeHeight / base.height), 0.01, 1);
+  const width = base.width * cropScale;
+  const height = base.height * cropScale;
+  const xRange = Math.max(0, draft.width - width);
+  const yRange = Math.max(0, draft.height - height);
+  const x = clampNumber(rect.x, 0, xRange);
+  const y = clampNumber(rect.y, 0, yRange);
+
+  return {
+    ...draft,
+    cropScale,
+    cropX: xRange === 0 ? 0.5 : x / xRange,
+    cropY: yRange === 0 ? 0.5 : y / yRange
+  };
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function loadImageElement(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Image load failed."));
+    image.src = url;
+  });
+}
+
+async function cropImageDraftToCanvas(draft: ImageImportDraft, targetWidth: number, targetHeight: number): Promise<PixelCanvas> {
+  const image = await loadImageElement(draft.url);
+  const safeWidth = Math.max(4, Math.min(512, Math.round(targetWidth)));
+  const safeHeight = Math.max(4, Math.min(512, Math.round(targetHeight)));
+  const crop = getImageCropRect(draft, safeWidth, safeHeight);
+  const canvas = document.createElement("canvas");
+  canvas.width = safeWidth;
+  canvas.height = safeHeight;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) {
+    throw new Error("Canvas context unavailable.");
+  }
+  context.imageSmoothingEnabled = false;
+  context.clearRect(0, 0, safeWidth, safeHeight);
+  context.drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, safeWidth, safeHeight);
+  const imageData = context.getImageData(0, 0, safeWidth, safeHeight).data;
+  const pixels: string[] = [];
+  for (let index = 0; index < imageData.length; index += 4) {
+    const red = imageData[index];
+    const green = imageData[index + 1];
+    const blue = imageData[index + 2];
+    const alpha = imageData[index + 3];
+    pixels.push(alpha === 255 ? toHexColor(red, green, blue) : `${toHexColor(red, green, blue)}${alpha.toString(16).padStart(2, "0")}`);
+  }
+  return { width: safeWidth, height: safeHeight, pixels };
+}
+
+function toHexColor(red: number, green: number, blue: number): string {
+  return `#${red.toString(16).padStart(2, "0")}${green.toString(16).padStart(2, "0")}${blue.toString(16).padStart(2, "0")}`;
 }
 
 function pitchName(pitch: number): string {
