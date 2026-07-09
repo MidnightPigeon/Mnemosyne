@@ -123,7 +123,7 @@ const authorUrl = "https://github.com/MidnightPigeon";
 const uiText = {
   zh: {
     appName: "星忆",
-    appTagline: "先记录，再成形。",
+    appTagline: "记录，而后雕琢。",
     language: "语言",
     theme: "主题选择",
     new: "新建",
