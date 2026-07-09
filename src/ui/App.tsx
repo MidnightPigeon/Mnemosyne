@@ -122,6 +122,8 @@ const authorUrl = "https://github.com/MidnightPigeon";
 
 const uiText = {
   zh: {
+    appName: "星忆",
+    appTagline: "先记录，再成形。",
     language: "语言",
     theme: "主题选择",
     new: "新建",
@@ -227,6 +229,8 @@ const uiText = {
     ]
   },
   en: {
+    appName: "Mnemosyne",
+    appTagline: "Capture first. Shape later.",
     language: "Language",
     theme: "Theme",
     new: "New",
@@ -489,8 +493,8 @@ export function App() {
         <div className={`border-b ${theme.border} px-5 py-4`}>
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <h1 className="text-xl font-semibold leading-none">Mnemosyne</h1>
-              <p className={`mt-2 truncate text-sm ${theme.muted}`}>Capture first. Shape later.</p>
+              <h1 className="text-xl font-semibold leading-none">{ui.appName}</h1>
+              <p className={`mt-2 truncate text-sm ${theme.muted}`}>{ui.appTagline}</p>
             </div>
             <label className="flex items-center gap-2 text-xs">
               {ui.language}
