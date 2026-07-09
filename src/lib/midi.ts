@@ -163,10 +163,24 @@ export function parseMidi(bytes: Uint8Array): MelodyClip {
   });
 }
 
+export type PlaybackControls = {
+  stop: () => void;
+  pause: () => void;
+  resume: () => void;
+  isPaused: () => boolean;
+};
+
+type PlaybackTimer = {
+  callback: () => void;
+  dueAt: number;
+  remaining: number;
+  id?: number;
+};
+
 export function playMelody(
   clip: MelodyClip,
-  options: { startStep?: number; trackId?: string; onStep?: (step: number) => void } = {}
-): () => void {
+  options: { startStep?: number; trackId?: string; onStep?: (step: number) => void; onEnded?: () => void } = {}
+): PlaybackControls {
   const normalized = normalizeMelodyClip(clip);
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
   const context = new AudioContextClass();
@@ -174,11 +188,24 @@ export function playMelody(
   const startStep = Math.max(0, Math.round(options.startStep ?? 0));
   const oscillators: OscillatorNode[] = [];
   const sources: AudioBufferSourceNode[] = [];
-  const timers: number[] = [];
+  const timers: PlaybackTimer[] = [];
   let stopped = false;
+  let paused = false;
   const tracks = options.trackId
     ? normalized.tracks.filter((track) => track.id === options.trackId)
     : normalized.tracks;
+
+  function schedulePlaybackTimer(delayMs: number, callback: () => void) {
+    const timer: PlaybackTimer = {
+      callback,
+      dueAt: performance.now() + Math.max(0, delayMs),
+      remaining: Math.max(0, delayMs)
+    };
+    if (!paused) {
+      timer.id = window.setTimeout(callback, timer.remaining);
+    }
+    timers.push(timer);
+  }
 
   const programs = [...new Set(tracks.map((track) => track.program))];
   void Promise.all(programs.map((program) => loadInstrumentSamples(context, program))).then(() => {
@@ -211,15 +238,26 @@ export function playMelody(
     if (options.onStep) {
       const maxStep = normalized.bars * normalized.beatsPerBar * normalized.stepsPerBeat;
       for (let step = startStep; step <= maxStep; step += 1) {
-        timers.push(window.setTimeout(() => options.onStep?.(step), (readyAt - context.currentTime + (step - startStep) * secondsPerStep) * 1000));
+        schedulePlaybackTimer((readyAt - context.currentTime + (step - startStep) * secondsPerStep) * 1000, () => options.onStep?.(step));
       }
     }
+
+    const maxStep = normalized.bars * normalized.beatsPerBar * normalized.stepsPerBeat;
+    schedulePlaybackTimer((readyAt - context.currentTime + Math.max(1, maxStep - startStep) * secondsPerStep) * 1000 + 300, () => {
+      if (!stopped) {
+        stopped = true;
+        void context.close();
+        options.onEnded?.();
+      }
+    });
   });
 
-  return () => {
+  function stop() {
     stopped = true;
     for (const timer of timers) {
-      window.clearTimeout(timer);
+      if (timer.id !== undefined) {
+        window.clearTimeout(timer.id);
+      }
     }
     for (const source of sources) {
       try {
@@ -236,6 +274,44 @@ export function playMelody(
       }
     }
     void context.close();
+  }
+
+  function pause() {
+    if (stopped || paused) {
+      return;
+    }
+    paused = true;
+    const now = performance.now();
+    for (const timer of timers) {
+      if (timer.id !== undefined) {
+        window.clearTimeout(timer.id);
+        timer.id = undefined;
+        timer.remaining = Math.max(0, timer.dueAt - now);
+      }
+    }
+    void context.suspend();
+  }
+
+  function resume() {
+    if (stopped || !paused) {
+      return;
+    }
+    paused = false;
+    const now = performance.now();
+    for (const timer of timers) {
+      if (timer.id === undefined) {
+        timer.dueAt = now + timer.remaining;
+        timer.id = window.setTimeout(timer.callback, timer.remaining);
+      }
+    }
+    void context.resume();
+  }
+
+  return {
+    stop,
+    pause,
+    resume,
+    isPaused: () => paused
   };
 }
 
@@ -440,7 +516,7 @@ function scheduleNote(
   const noteEnd = noteStart + Math.max(1, note.duration) * secondsPerStep;
   const audibleEnd = sustain ? noteEnd + Math.min(0.08, secondsPerStep * 0.35) : Math.min(noteEnd, noteStart + 0.28);
   const volume = clamp(note.velocity || 90, 1, 127) / 127;
-  const trackGain = clamp(trackVolume || defaultTrackVolume, 1, 240) / defaultTrackVolume;
+  const trackGain = clamp(trackVolume || defaultTrackVolume, 1, 240) / 100;
   const instrumentGain = gainForProgram(program);
   const master = context.createGain();
   const peakGain = Math.max(0.015, volume * trackGain * instrumentGain);
@@ -459,13 +535,14 @@ function scheduleNote(
 
       const source = context.createBufferSource();
       source.buffer = buffer;
-      source.playbackRate.setValueAtTime(2 ** ((note.pitch - sample.rootPitch) / 12), noteStart);
+      const playbackRate = 2 ** ((note.pitch - sample.rootPitch) / 12);
+      source.playbackRate.setValueAtTime(playbackRate, noteStart);
       if (sustain && note.duration > 1 && buffer.duration > 0.12) {
         source.loop = true;
         source.loopStart = Math.min(0.06, buffer.duration * 0.25);
         source.loopEnd = Math.max(source.loopStart + 0.04, Math.min(buffer.duration - 0.01, buffer.duration * 0.92));
       }
-      source.connect(master);
+      connectSampleSource(context, source, master, program, playbackRate, noteStart, audibleEnd);
       const sampleOffset = Math.min(0.025, buffer.duration * 0.1);
       source.start(noteStart, sampleOffset);
       source.stop(audibleEnd + 0.08);
@@ -498,7 +575,7 @@ async function scheduleOfflineNote(
   const noteEnd = noteStart + Math.max(1, note.duration) * secondsPerStep;
   const audibleEnd = sustain ? noteEnd + Math.min(0.08, secondsPerStep * 0.35) : Math.min(noteEnd, noteStart + 0.28);
   const volume = clamp(note.velocity || 90, 1, 127) / 127;
-  const trackGain = clamp(trackVolume || defaultTrackVolume, 1, 240) / defaultTrackVolume;
+  const trackGain = clamp(trackVolume || defaultTrackVolume, 1, 240) / 100;
   const instrumentGain = gainForProgram(program);
   const master = context.createGain();
   const peakGain = Math.max(0.015, volume * trackGain * instrumentGain);
@@ -510,16 +587,45 @@ async function scheduleOfflineNote(
 
   const source = context.createBufferSource();
   source.buffer = buffer;
-  source.playbackRate.setValueAtTime(2 ** ((note.pitch - sample.rootPitch) / 12), noteStart);
+  const playbackRate = 2 ** ((note.pitch - sample.rootPitch) / 12);
+  source.playbackRate.setValueAtTime(playbackRate, noteStart);
   if (sustain && note.duration > 1 && buffer.duration > 0.12) {
     source.loop = true;
     source.loopStart = Math.min(0.06, buffer.duration * 0.25);
     source.loopEnd = Math.max(source.loopStart + 0.04, Math.min(buffer.duration - 0.01, buffer.duration * 0.92));
   }
-  source.connect(master);
+  connectSampleSource(context, source, master, program, playbackRate, noteStart, audibleEnd);
   source.start(noteStart, Math.min(0.025, buffer.duration * 0.1));
   source.stop(audibleEnd + 0.08);
   sources.push(source);
+}
+
+function connectSampleSource(
+  context: BaseAudioContext,
+  source: AudioBufferSourceNode,
+  master: GainNode,
+  program: number,
+  playbackRate: number,
+  noteStart: number,
+  audibleEnd: number
+) {
+  if (normalizeProgram(program) !== 16) {
+    source.connect(master);
+    return;
+  }
+
+  const tremolo = context.createGain();
+  source.connect(tremolo).connect(master);
+
+  const rate = 6.2;
+  const vibratoCents = 9;
+  const tremoloDepth = 0.16;
+  const step = 1 / 36;
+  for (let time = noteStart; time <= audibleEnd + 0.08; time += step) {
+    const phase = (time - noteStart) * rate * Math.PI * 2;
+    source.playbackRate.linearRampToValueAtTime(playbackRate * 2 ** ((Math.sin(phase) * vibratoCents) / 1200), time);
+    tremolo.gain.linearRampToValueAtTime(1 - tremoloDepth * 0.5 + Math.sin(phase) * tremoloDepth * 0.5, time);
+  }
 }
 
 async function loadInstrumentSamples(context: BaseAudioContext, program: number): Promise<void> {
@@ -571,18 +677,21 @@ function instrumentForProgram(program: number): (typeof gmInstruments)[number] {
 function gainForProgram(program: number): number {
   const normalized = normalizeProgram(program);
   if (normalized === 88) {
-    return 1.65;
+    return 6.4;
   }
   if (normalized === 48) {
-    return 1.35;
+    return 5.2;
   }
   if (normalized === 73) {
-    return 1.15;
+    return 4.6;
+  }
+  if (normalized === 16) {
+    return 5.8;
   }
   if (normalized === 6 || normalized === 80 || normalized === 81) {
-    return 0.78;
+    return 3.4;
   }
-  return 1;
+  return 4.2;
 }
 
 function scheduleFallbackOscillator(
@@ -598,7 +707,7 @@ function scheduleFallbackOscillator(
   const timbre = timbreForProgram(program);
   const noteEnd = noteStart + (sustain ? Math.max(1, note.duration) * secondsPerStep : Math.min(0.28, Math.max(1, note.duration) * secondsPerStep));
   const volume = clamp(note.velocity || 90, 1, 127) / 127;
-  const trackGain = clamp(trackVolume || defaultTrackVolume, 1, 240) / defaultTrackVolume;
+  const trackGain = clamp(trackVolume || defaultTrackVolume, 1, 240) / 100;
   const frequency = midiPitchToFrequency(note.pitch);
   const master = context.createGain();
   const filter = context.createBiquadFilter();
@@ -620,6 +729,11 @@ function scheduleFallbackOscillator(
     oscillator.type = layer.type;
     oscillator.frequency.setValueAtTime(frequency * layer.ratio, noteStart);
     oscillator.detune.setValueAtTime(layer.detune, noteStart);
+    if (normalizeProgram(program) === 16) {
+      for (let time = noteStart; time <= noteEnd + timbre.release; time += 1 / 36) {
+        oscillator.detune.linearRampToValueAtTime(layer.detune + Math.sin((time - noteStart) * 6.2 * Math.PI * 2) * 9, time);
+      }
+    }
     layerGain.gain.setValueAtTime(layer.gain, noteStart);
     oscillator.connect(layerGain).connect(filter);
     oscillator.start(noteStart);

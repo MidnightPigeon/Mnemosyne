@@ -1,6 +1,6 @@
 [package]
 name = "mnemosyne"
-version = "0.0.0"
+version = "0.3.2"
 description = "A local-first creative workspace for capturing ideas."
 authors = ["Mnemosyne"]
 edition = "2021"

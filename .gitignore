@@ -4,24 +4,28 @@ node_modules/
 # Frontend build output
 dist/
 releases/
+*.msi
+*.exe
+*.nsis.zip
 
 # Tauri and Rust build output
 src-tauri/target/
 src-tauri/gen/
+src-tauri/bundle/
 
 # Local portable tooling installed for this machine
 .tools/
 
 # Local app data, user settings, and private ideas
-ideas/
-storage/
-data/
-local-data/
-mnemosyne-data/
-settings.json
-*.db
-*.sqlite
-*.sqlite3
+/ideas/
+/storage/
+/data/
+/local-data/
+/mnemosyne-data/
+/settings.json
+/**/*.db
+/**/*.sqlite
+/**/*.sqlite3
 
 # Environment and machine-local configuration
 .env

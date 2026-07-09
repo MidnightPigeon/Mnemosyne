@@ -18,7 +18,8 @@ import {
   playMelody,
   previewMelodyNote,
   renderMelodyWav,
-  writeMidi
+  writeMidi,
+  type PlaybackControls
 } from "../lib/midi";
 import {
   cropCanvasBounds,
@@ -85,6 +86,28 @@ const themes = {
     hover: "hover:bg-[#fff4f8]",
     selected: "border-[#c9829b] bg-[#fffafd]",
     primary: "bg-[#8d3d59] hover:bg-[#743048] text-white"
+  },
+  starlight: {
+    label: "星空",
+    app: "bg-[#eef7ff] bg-[radial-gradient(circle_at_14%_18%,rgba(255,245,184,0.55)_0_1px,transparent_2px),radial-gradient(circle_at_82%_22%,rgba(255,250,205,0.45)_0_1px,transparent_2px),linear-gradient(180deg,#eef7ff_0%,#f8fcff_54%,#fff9df_100%)]",
+    panel: "bg-[#fbfdff]/95",
+    side: "bg-[#e8f4ff]",
+    border: "border-[#bed4ea]",
+    muted: "text-[#65798a]",
+    hover: "hover:bg-[#f4faff]",
+    selected: "border-[#7caed4] bg-[#fbfdff]",
+    primary: "bg-[#2f6f9f] hover:bg-[#275f88] text-white"
+  },
+  dream: {
+    label: "梦幻",
+    app: "bg-[#f3f0ff] bg-[radial-gradient(circle_at_20%_18%,rgba(186,230,253,0.55),transparent_34%),radial-gradient(circle_at_78%_28%,rgba(221,214,254,0.62),transparent_38%),linear-gradient(180deg,#f8fbff_0%,#f3f0ff_58%,#eef7ff_100%)]",
+    panel: "bg-[#fbfaff]/95",
+    side: "bg-[#ececff]",
+    border: "border-[#d1cdec]",
+    muted: "text-[#716b88]",
+    hover: "hover:bg-[#f7f5ff]",
+    selected: "border-[#a9a1d8] bg-[#fbfaff]",
+    primary: "bg-[#6b5ca8] hover:bg-[#5a4d92] text-white"
   }
 } as const;
 
@@ -100,6 +123,7 @@ const authorUrl = "https://github.com/MidnightPigeon";
 const uiText = {
   zh: {
     language: "语言",
+    theme: "主题选择",
     new: "新建",
     kindMarkdown: "文本记录",
     kindPixel: "像素画布",
@@ -133,7 +157,10 @@ const uiText = {
     noteLength: "音符长度",
     sustain: "延音",
     stop: "停止",
+    pause: "暂停",
+    resume: "继续",
     playAudio: "播放音频",
+    visualPlay: "可视化演奏",
     playTrack: "播放当前音轨",
     importMidi: "导入 MIDI",
     addTrack: "添加音轨",
@@ -166,6 +193,8 @@ const uiText = {
     palette: "存色区",
     selectColor: "选择",
     storeColor: "存入当前颜色",
+    randomFill: "画面随机填色",
+    stopRandomFill: "停止",
     midiImportFailed: "MIDI 导入失败。",
     tools: {
       pencil: "画笔",
@@ -180,7 +209,9 @@ const uiText = {
       sky: "浅蓝",
       mint: "薄荷",
       gray: "浅灰",
-      blush: "淡粉"
+      blush: "淡粉",
+      starlight: "星空",
+      dream: "梦幻"
     },
     markdownTips: [
       ["# 标题", "一级标题"],
@@ -197,6 +228,7 @@ const uiText = {
   },
   en: {
     language: "Language",
+    theme: "Theme",
     new: "New",
     kindMarkdown: "Text record",
     kindPixel: "Pixel canvas",
@@ -230,7 +262,10 @@ const uiText = {
     noteLength: "Note length",
     sustain: "Sustain",
     stop: "Stop",
+    pause: "Pause",
+    resume: "Resume",
     playAudio: "Play audio",
+    visualPlay: "Visual performance",
     playTrack: "Play current track",
     importMidi: "Import MIDI",
     addTrack: "Add track",
@@ -263,6 +298,8 @@ const uiText = {
     palette: "Palette",
     selectColor: "Select",
     storeColor: "Store current color",
+    randomFill: "Random fill",
+    stopRandomFill: "Stop",
     midiImportFailed: "MIDI import failed.",
     tools: {
       pencil: "Pencil",
@@ -277,7 +314,9 @@ const uiText = {
       sky: "Sky",
       mint: "Mint",
       gray: "Gray",
-      blush: "Blush"
+      blush: "Blush",
+      starlight: "Starlight",
+      dream: "Dream"
     },
     markdownTips: [
       ["# Heading", "Level 1 heading"],
@@ -495,20 +534,20 @@ export function App() {
             value={query}
           />
 
-          <div className="mt-3 flex items-center gap-2">
-            {Object.entries(themes).map(([key, item]) => (
-              <button
-                className={`h-7 rounded-md border px-2 text-xs ${
-                  key === themeKey ? "border-[#245b82] bg-white" : `${theme.border} ${theme.hover}`
-                }`}
-                key={key}
-                onClick={() => setThemeKey(key as ThemeKey)}
-                type="button"
-              >
-                {ui.themes[key as ThemeKey]}
-              </button>
-            ))}
-          </div>
+          <label className="mt-3 flex items-center gap-2 text-xs">
+            {ui.theme}
+            <select
+              className={`h-8 flex-1 rounded-md border ${theme.border} ${theme.panel} px-2 text-sm outline-none`}
+              onChange={(event) => setThemeKey(event.target.value as ThemeKey)}
+              value={themeKey}
+            >
+              {Object.keys(themes).map((key) => (
+                <option key={key} value={key}>
+                  {ui.themes[key as ThemeKey]}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
@@ -714,13 +753,16 @@ function MelodyEditor({
   ui: UiCopy;
 }) {
   const [activeTrackIndex, setActiveTrackIndex] = useState(0);
-  const [stopPlayback, setStopPlayback] = useState<(() => void) | null>(null);
+  const [playbackControl, setPlaybackControl] = useState<PlaybackControls | null>(null);
+  const [playbackPaused, setPlaybackPaused] = useState(false);
   const [playStartStep, setPlayStartStep] = useState(0);
   const [playheadStep, setPlayheadStep] = useState<number | null>(null);
+  const [visualPlayback, setVisualPlayback] = useState(false);
   const [hoverNote, setHoverNote] = useState<{ pitch: number; start: number } | null>(null);
   const [noteLength, setNoteLength] = useState(1);
   const [rollZoom, setRollZoom] = useState(1);
-  const playbackRef = useRef<{ id: number; stop?: () => void; timeout?: number }>({ id: 0 });
+  const playbackRef = useRef<{ id: number; control?: PlaybackControls }>({ id: 0 });
+  const rollScrollRef = useRef<HTMLDivElement | null>(null);
   const clip = normalizeMelodyClip(melody);
   const steps = Math.max(4, Math.min(768, clip.bars * clip.beatsPerBar * clip.stepsPerBeat));
   const cellWidth = Math.round(28 * rollZoom);
@@ -732,12 +774,28 @@ function MelodyEditor({
 
   useEffect(() => {
     return () => {
-      playbackRef.current.stop?.();
-      if (playbackRef.current.timeout !== undefined) {
-        window.clearTimeout(playbackRef.current.timeout);
-      }
+      playbackRef.current.control?.stop();
     };
   }, []);
+
+  useEffect(() => {
+    if (playheadStep === null || visualPlayback) {
+      return;
+    }
+    const container = rollScrollRef.current;
+    if (!container) {
+      return;
+    }
+    const labelWidth = 72;
+    const targetLeft = labelWidth + playheadStep * cellWidth;
+    const visibleLeft = container.scrollLeft;
+    const visibleRight = visibleLeft + container.clientWidth;
+    if (targetLeft + cellWidth > visibleRight - cellWidth * 2) {
+      container.scrollTo({ left: Math.max(0, targetLeft - labelWidth), behavior: "smooth" });
+    } else if (targetLeft < visibleLeft + labelWidth) {
+      container.scrollTo({ left: Math.max(0, targetLeft - labelWidth), behavior: "smooth" });
+    }
+  }, [cellWidth, playheadStep, visualPlayback]);
 
   function updateClip(next: MelodyClip) {
     onMelodyChange(normalizeMelodyClip(next));
@@ -797,39 +855,52 @@ function MelodyEditor({
     }
   }
 
-  function startPlayback(trackId?: string) {
-    playbackRef.current.stop?.();
-    if (playbackRef.current.timeout !== undefined) {
-      window.clearTimeout(playbackRef.current.timeout);
-    }
+  function startPlayback(trackId?: string, visual = false) {
+    playbackRef.current.control?.stop();
     const playbackId = playbackRef.current.id + 1;
+    setVisualPlayback(visual);
+    setPlaybackPaused(false);
     setPlayheadStep(playStartStep);
-    const stop = playMelody(clip, { startStep: playStartStep, trackId, onStep: setPlayheadStep });
-    playbackRef.current = { id: playbackId, stop };
-    setStopPlayback(() => stop);
-    const totalSteps = clip.bars * clip.beatsPerBar * clip.stepsPerBeat;
-    const timeout = window.setTimeout(
-      () => {
+    const control = playMelody(clip, {
+      startStep: playStartStep,
+      trackId,
+      onStep: setPlayheadStep,
+      onEnded: () => {
         if (playbackRef.current.id !== playbackId) {
           return;
         }
         playbackRef.current = { id: playbackId };
-        setStopPlayback(null);
+        setPlaybackControl(null);
+        setPlaybackPaused(false);
         setPlayheadStep(null);
-      },
-      Math.ceil((60 / clip.bpm / clip.stepsPerBeat) * Math.max(1, totalSteps - playStartStep) * 1000) + 300
-    );
-    playbackRef.current.timeout = timeout;
+        setVisualPlayback(false);
+      }
+    });
+    playbackRef.current = { id: playbackId, control };
+    setPlaybackControl(control);
   }
 
   function stopCurrentPlayback() {
-    playbackRef.current.stop?.();
-    if (playbackRef.current.timeout !== undefined) {
-      window.clearTimeout(playbackRef.current.timeout);
-    }
+    playbackRef.current.control?.stop();
     playbackRef.current = { id: playbackRef.current.id + 1 };
-    setStopPlayback(null);
+    setPlaybackControl(null);
+    setPlaybackPaused(false);
     setPlayheadStep(null);
+    setVisualPlayback(false);
+  }
+
+  function togglePlaybackPause() {
+    const control = playbackRef.current.control;
+    if (!control) {
+      return;
+    }
+    if (control.isPaused()) {
+      control.resume();
+      setPlaybackPaused(false);
+      return;
+    }
+    control.pause();
+    setPlaybackPaused(true);
   }
 
   return (
@@ -849,22 +920,33 @@ function MelodyEditor({
           <input checked={clip.sustain} onChange={(event) => updateClip({ ...clip, sustain: event.target.checked })} type="checkbox" />
           {ui.sustain}
         </label>
-        {stopPlayback ? (
-          <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={stopCurrentPlayback} type="button">
-            {ui.stop}
-          </button>
+        {playbackControl ? (
+          <>
+            <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={stopCurrentPlayback} type="button">
+              {ui.stop}
+            </button>
+            <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={togglePlaybackPause} type="button">
+              {playbackPaused ? ui.resume : ui.pause}
+            </button>
+          </>
         ) : (
           <>
             <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => startPlayback()} type="button">
               {ui.playAudio}
             </button>
-            <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => startPlayback(activeTrack?.id)} type="button">
-              {ui.playTrack}
+            <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => startPlayback(undefined, true)} type="button">
+              {ui.visualPlay}
             </button>
           </>
         )}
         <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleImportMidi()} type="button">
           {ui.importMidi}
+        </button>
+      </div>
+
+      <div className={`flex flex-wrap items-center gap-3 border-b ${theme.border} ${theme.panel} px-5 py-2`}>
+        <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} disabled={!activeTrack || Boolean(playbackControl)} onClick={() => startPlayback(activeTrack?.id)} type="button">
+          {ui.playTrack}
         </button>
         <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={addTrack} type="button">
           {ui.addTrack}
@@ -909,6 +991,19 @@ function MelodyEditor({
               onChange={(value) => updateTrack(activeTrack.id, (track) => ({ ...track, volume: value }))}
               value={activeTrack.volume}
             />
+            <label className="relative ml-1 flex h-8 w-8 cursor-pointer items-center justify-center" title={ui.color}>
+              <span
+                className="h-5 w-5 rounded-full border border-white shadow-[0_0_0_1px_rgba(23,33,43,0.25)]"
+                style={{ backgroundColor: activeTrack.color }}
+              />
+              <input
+                aria-label={ui.color}
+                className="absolute inset-0 cursor-pointer opacity-0"
+                onChange={(event) => updateTrack(activeTrack.id, (track) => ({ ...track, color: event.target.value }))}
+                type="color"
+                value={activeTrack.color}
+              />
+            </label>
           </>
         ) : null}
         <label className="ml-auto flex items-center gap-2 text-sm">
@@ -926,24 +1021,28 @@ function MelodyEditor({
         </label>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto py-5 pr-5">
+      {visualPlayback ? (
+        <MelodyVisualPlayer clip={clip} playheadStep={playheadStep ?? playStartStep} startStep={playStartStep} trackId={undefined} />
+      ) : (
+      <div className="min-h-0 flex-1 overflow-auto py-5 pr-5" ref={rollScrollRef}>
         <div
-          className="grid w-max rounded-md border border-[#9badbd] bg-white shadow-sm"
+          className="grid w-max rounded-md border border-[#9badbd]/80 bg-transparent shadow-sm"
           style={{
             gridTemplateColumns: `72px repeat(${steps}, ${cellWidth}px)`,
             gridTemplateRows: `${timelineHeight}px ${barHeight}px repeat(${pitches.length}, ${rowHeight}px)`
           }}
         >
-          <div className="sticky left-0 top-0 z-40 border-b border-r border-[#8fb3d9] bg-[#245b82] px-2 text-xs text-white shadow-[2px_0_0_rgba(0,0,0,0.12)]" style={{ lineHeight: `${timelineHeight}px` }}>
+          <div className="sticky left-0 z-40 border-b border-r border-[#8fb3d9] bg-[#245b82] px-2 text-xs text-white shadow-[2px_0_0_rgba(0,0,0,0.12)]" style={{ lineHeight: `${timelineHeight}px` }}>
             {ui.timeline}
           </div>
           {Array.from({ length: steps }, (_, step) => (
             <button
-              className={`border-b border-r border-[#8fb3d9] text-[10px] ${
-                playheadStep === step ? "bg-[#17212b]" : step === playStartStep ? "bg-[#3b82c4]" : "bg-[#d9ecff]"
-              }`}
+              className="border-b border-r border-[#8fb3d9]/80 text-[10px]"
               key={`timeline-${step}`}
               onClick={() => setPlayStartStep(step)}
+              style={{
+                backgroundColor: playheadStep === step ? "rgba(23, 33, 43, 0.88)" : step === playStartStep ? "rgba(59, 130, 196, 0.74)" : "rgba(217, 236, 255, 0.58)"
+              }}
               title={`${ui.playStart}: ${step + 1}`}
               type="button"
             />
@@ -956,16 +1055,20 @@ function MelodyEditor({
           </div>
           {Array.from({ length: steps }, (_, step) => (
             <button
-              className={`border-b border-r border-[#d8e1ea] text-center text-[10px] ${
+              className={`border-b border-r border-[#d8e1ea]/75 text-center text-[10px] ${
                 step === playStartStep
-                  ? "bg-[#cfe6ff] font-semibold text-[#245b82]"
+                  ? "font-semibold text-[#245b82]"
                   : step % (clip.beatsPerBar * clip.stepsPerBeat) === 0
-                    ? "bg-[#eaf4ff] font-semibold text-[#245b82]"
-                    : "bg-[#f8fbff] text-[#8aa0b5]"
+                    ? "font-semibold text-[#245b82]"
+                    : "text-[#8aa0b5]"
               }`}
               key={`bar-${step}`}
               onClick={() => setPlayStartStep(step)}
-              style={{ lineHeight: `${barHeight}px` }}
+              style={{
+                backgroundColor:
+                  step === playStartStep ? "rgba(207, 230, 255, 0.66)" : step % (clip.beatsPerBar * clip.stepsPerBeat) === 0 ? "rgba(234, 244, 255, 0.48)" : "rgba(248, 251, 255, 0.2)",
+                lineHeight: `${barHeight}px`
+              }}
               title={language === "en" ? `${ui.startFromCell} ${step + 1}` : `${ui.startFromCell} ${step + 1} ${ui.cell}`}
               type="button"
             >
@@ -992,6 +1095,114 @@ function MelodyEditor({
             />
           ))}
         </div>
+      </div>
+      )}
+    </div>
+  );
+}
+
+function MelodyVisualPlayer({
+  clip,
+  playheadStep,
+  startStep,
+  trackId
+}: {
+  clip: MelodyClip;
+  playheadStep: number;
+  startStep: number;
+  trackId?: string;
+}) {
+  const normalized = normalizeMelodyClip(clip);
+  const visibleSteps = Math.max(16, normalized.stepsPerBeat * 8);
+  const tracks = trackId ? normalized.tracks.filter((track) => track.id === trackId) : normalized.tracks;
+  const notes = tracks.flatMap((track) =>
+    track.notes
+      .filter((note) => note.start + note.duration >= playheadStep && note.start <= playheadStep + visibleSteps)
+      .map((note) => ({ note, track }))
+  );
+  const activeNotes = notes.filter(({ note }) => note.start <= playheadStep && note.start + note.duration > playheadStep);
+  const activePitches = new Set(activeNotes.map(({ note }) => note.pitch));
+  const activePitchColors = new Map(activeNotes.map(({ note, track }) => [note.pitch, track.color]));
+  const keys = useMemo(() => Array.from({ length: melodyMaxPitch - melodyMinPitch + 1 }, (_, index) => melodyMinPitch + index), []);
+  const starFieldStyle = {
+    backgroundImage:
+      "radial-gradient(circle at 12% 18%, rgba(255,255,255,0.9) 0 1px, transparent 1.5px), radial-gradient(circle at 28% 62%, rgba(186,230,253,0.85) 0 1px, transparent 1.5px), radial-gradient(circle at 42% 31%, rgba(255,255,255,0.8) 0 1px, transparent 1.5px), radial-gradient(circle at 65% 12%, rgba(219,234,254,0.9) 0 1px, transparent 1.5px), radial-gradient(circle at 78% 44%, rgba(255,255,255,0.75) 0 1px, transparent 1.5px), radial-gradient(circle at 91% 76%, rgba(186,230,253,0.8) 0 1px, transparent 1.5px), linear-gradient(180deg, #071326 0%, #0b1930 44%, #050b15 100%)",
+    backgroundSize: "180px 180px, 240px 240px, 210px 210px, 260px 260px, 230px 230px, 300px 300px, 100% 100%"
+  };
+
+  return (
+    <div className="relative min-h-0 flex-1 overflow-hidden bg-[#08111f]">
+      <div className="absolute inset-x-0 top-0 h-[calc(100%-88px)] overflow-hidden">
+        <div className="absolute inset-0" style={starFieldStyle} />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,11,21,0.05)_0%,rgba(14,46,82,0.24)_58%,rgba(5,11,21,0.2)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 top-0 mx-auto max-w-[1180px]">
+          {notes.map(({ note, track }) => {
+            const left = pitchToVisualPercent(note.pitch);
+            const startY = 100 - ((note.start - playheadStep) / visibleSteps) * 100;
+            const endY = 100 - ((note.start + note.duration - playheadStep) / visibleSteps) * 100;
+            const top = Math.max(-24, Math.min(100, endY));
+            const bottom = Math.max(top + 2, Math.min(100, startY));
+            const height = bottom - top;
+            const isActive = note.start <= playheadStep && note.start + note.duration > playheadStep;
+            return (
+              <div
+                className={`absolute rounded-sm border transition-[top,height,opacity,filter] duration-150 ease-linear ${isActive ? "opacity-100 blur-0" : "opacity-80"}`}
+                key={`${track.id}-${note.id}`}
+                style={{
+                  left: `${left}%`,
+                  top: `${top}%`,
+                  width: `${100 / 88}%`,
+                  height: `${height}%`,
+                  backgroundColor: hexWithAlpha(track.color, isActive ? 0.92 : 0.68),
+                  borderColor: track.color,
+                  boxShadow: isActive ? `0 0 18px ${track.color}` : undefined,
+                  transform: "translateX(-50%)"
+                }}
+              />
+            );
+          })}
+          {activeNotes.map(({ note, track }) => (
+            <div
+              className="absolute bottom-0 h-[5px] rounded-t-sm"
+              key={`hit-${track.id}-${note.id}`}
+              style={{
+                left: `${pitchToVisualPercent(note.pitch)}%`,
+                width: `${visualKeyWidthPercent()}%`,
+                backgroundColor: track.color,
+                boxShadow: `0 -4px 18px ${track.color}`,
+                transform: "translateX(-50%)"
+              }}
+            />
+          ))}
+        </div>
+        <div className="absolute inset-x-0 bottom-0 h-px bg-[#bae6fd]/80 shadow-[0_0_12px_rgba(125,211,252,0.7)]" />
+      </div>
+      <div className="absolute inset-x-0 bottom-0 h-[88px] border-t border-[#4d6f91] bg-[#0f172a]">
+        <div className="relative mx-auto h-full w-full max-w-[1180px]">
+          <div className="grid h-full" style={{ gridTemplateColumns: `repeat(${keys.length}, minmax(0, 1fr))` }}>
+            {keys.map((pitch) => {
+              const black = isBlackKey(pitch);
+              const activeColor = activePitchColors.get(pitch);
+              return (
+                <div
+                  className={`relative border-r border-[#9fb0c2] ${black ? "bg-[#111827]" : "bg-[#f8fafc]"} ${
+                    activePitches.has(pitch) ? "shadow-[inset_0_0_0_2px_#38bdf8,inset_0_10px_20px_rgba(56,189,248,0.35)] brightness-125" : ""
+                  }`}
+                  key={pitch}
+                  style={activeColor ? { borderTopColor: activeColor } : undefined}
+                  title={pitchName(pitch)}
+                >
+                  {pitch % 12 === 0 ? (
+                    <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 text-[9px] ${black ? "text-white" : "text-[#475569]"}`}>{pitchName(pitch)}</span>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      <div className="absolute left-4 top-4 rounded border border-[#35597a] bg-[#0f2138]/80 px-3 py-1 text-xs text-[#dbeafe]">
+        {pitchName(melodyMinPitch)} - {pitchName(melodyMaxPitch)} · {Math.max(0, playheadStep - startStep)}
       </div>
     </div>
   );
@@ -1086,15 +1297,7 @@ function MelodyRow({
 
         return (
           <button
-            className={`border-b border-r border-[#e3ebf2] ${
-              step === playheadStep
-                ? "bg-[#dbeafe]"
-                : step % (clip.beatsPerBar * clip.stepsPerBeat) === 0
-                  ? "bg-[#eef6ff]"
-                  : step % clip.stepsPerBeat === 0
-                    ? "bg-[#f7fbff]"
-                    : "bg-white"
-            }`}
+            className="border-b border-r border-[#d6e4ef]/70"
             key={`${pitch}-${step}`}
             onClick={(event) => {
               if (longPressRef.current) {
@@ -1112,7 +1315,7 @@ function MelodyRow({
                 ? hexWithAlpha(background, isContinuation ? 0.48 : active ? 0.86 : 0.35)
                 : isHoverPreview
                   ? "rgba(36, 91, 130, 0.16)"
-                  : undefined,
+                  : melodyCellBackground(step, playheadStep, clip),
               boxShadow: [
                 isHoverPreview ? "inset 0 0 0 2px rgba(36, 91, 130, 0.85)" : undefined,
                 isNoteStart && visible ? `inset 4px 0 0 ${visible.track.color}` : undefined,
@@ -1161,6 +1364,8 @@ function PixelEditor({
   const [dragStart, setDragStart] = useState<PixelPoint | null>(null);
   const [hoverPoint, setHoverPoint] = useState<PixelPoint | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [randomFillRunning, setRandomFillRunning] = useState(false);
+  const randomFillCanvasRef = useRef<PixelCanvas | undefined>(canvas);
 
   const drawOptions: DrawOptions = { color, thickness, filled, sprayRadius, sprayShape };
   const previewCanvas = useMemo(() => {
@@ -1195,6 +1400,45 @@ function PixelEditor({
     setTargetWidth(canvas.width);
     setTargetHeight(canvas.height);
   }, [canvas?.width, canvas?.height]);
+
+  useEffect(() => {
+    randomFillCanvasRef.current = canvas;
+  }, [canvas]);
+
+  useEffect(() => {
+    if (!randomFillRunning) {
+      return;
+    }
+
+    const handle = window.setInterval(() => {
+      const base = randomFillCanvasRef.current;
+      if (!base) {
+        setRandomFillRunning(false);
+        return;
+      }
+
+      const blankIndices: number[] = [];
+      base.pixels.forEach((pixel, index) => {
+        if (isBlankPixel(pixel)) {
+          blankIndices.push(index);
+        }
+      });
+
+      if (blankIndices.length === 0) {
+        setRandomFillRunning(false);
+        return;
+      }
+
+      const index = blankIndices[Math.floor(Math.random() * blankIndices.length)];
+      const pixels = [...base.pixels];
+      pixels[index] = randomHexColor();
+      const nextCanvas = { ...base, pixels };
+      randomFillCanvasRef.current = nextCanvas;
+      onCanvasChange(nextCanvas);
+    }, 250);
+
+    return () => window.clearInterval(handle);
+  }, [onCanvasChange, randomFillRunning]);
 
   if (!canvas) {
     return <div className="p-6 text-sm">{ui.missingCanvas}</div>;
@@ -1252,6 +1496,7 @@ function PixelEditor({
   }
 
   async function handleImportImage() {
+    setRandomFillRunning(false);
     const bytes = await importImageFile();
     if (!bytes) {
       return;
@@ -1444,6 +1689,16 @@ function PixelEditor({
               />
             ))}
           </div>
+          <button
+            className={`mt-auto min-h-9 w-full rounded-md border px-2 py-2 text-xs ${
+              randomFillRunning ? "border-[#9c3d2c] bg-[#fff1ec] text-[#9c3d2c]" : `${theme.border} ${theme.hover}`
+            } disabled:cursor-not-allowed disabled:opacity-50`}
+            disabled={Boolean(importDraft)}
+            onClick={() => setRandomFillRunning((running) => !running)}
+            type="button"
+          >
+            {randomFillRunning ? ui.stopRandomFill : ui.randomFill}
+          </button>
         </aside>
       </div>
     </div>
@@ -1724,6 +1979,49 @@ function pointToIndexSafe(canvas: PixelCanvas, x: number, y: number): number | u
     return undefined;
   }
   return y * canvas.width + x;
+}
+
+function isBlankPixel(pixel: string): boolean {
+  const normalized = pixel.trim().toLowerCase();
+  if (normalized === transparentPixel || normalized === "transparent") {
+    return true;
+  }
+  if (normalized.startsWith("#") && (normalized.length === 5 || normalized.length === 9)) {
+    return normalized.endsWith("00");
+  }
+  if (normalized.startsWith("rgba(")) {
+    const parts = normalized.split(",");
+    const alpha = parts[parts.length - 1]?.replace(")", "").trim();
+    return alpha === "0" || alpha === "0.0";
+  }
+  return false;
+}
+
+function randomHexColor(): string {
+  return `#${Math.floor(Math.random() * 0xffffff)
+    .toString(16)
+    .padStart(6, "0")}`;
+}
+
+function melodyCellBackground(step: number, playheadStep: number | null, clip: MelodyClip): string {
+  if (step === playheadStep) {
+    return "rgba(219, 234, 254, 0.42)";
+  }
+  if (step % (clip.beatsPerBar * clip.stepsPerBeat) === 0) {
+    return "rgba(238, 246, 255, 0.26)";
+  }
+  if (step % clip.stepsPerBeat === 0) {
+    return "rgba(247, 251, 255, 0.18)";
+  }
+  return "rgba(255, 255, 255, 0.08)";
+}
+
+function pitchToVisualPercent(pitch: number): number {
+  return ((pitch - melodyMinPitch + 0.5) / (melodyMaxPitch - melodyMinPitch + 1)) * 100;
+}
+
+function visualKeyWidthPercent(): number {
+  return 100 / (melodyMaxPitch - melodyMinPitch + 1);
 }
 
 function getImageCropRect(draft: ImageImportDraft, targetWidth: number, targetHeight: number) {
