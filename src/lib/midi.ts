@@ -537,11 +537,7 @@ function scheduleNote(
       source.buffer = buffer;
       const playbackRate = 2 ** ((note.pitch - sample.rootPitch) / 12);
       source.playbackRate.setValueAtTime(playbackRate, noteStart);
-      if (sustain && note.duration > 1 && buffer.duration > 0.12) {
-        source.loop = true;
-        source.loopStart = Math.min(0.06, buffer.duration * 0.25);
-        source.loopEnd = Math.max(source.loopStart + 0.04, Math.min(buffer.duration - 0.01, buffer.duration * 0.92));
-      }
+      configureSampleLoop(source, buffer, program, sustain, note.duration);
       connectSampleSource(context, source, master, program, playbackRate, noteStart, audibleEnd);
       const sampleOffset = Math.min(0.025, buffer.duration * 0.1);
       source.start(noteStart, sampleOffset);
@@ -589,15 +585,25 @@ async function scheduleOfflineNote(
   source.buffer = buffer;
   const playbackRate = 2 ** ((note.pitch - sample.rootPitch) / 12);
   source.playbackRate.setValueAtTime(playbackRate, noteStart);
-  if (sustain && note.duration > 1 && buffer.duration > 0.12) {
-    source.loop = true;
-    source.loopStart = Math.min(0.06, buffer.duration * 0.25);
-    source.loopEnd = Math.max(source.loopStart + 0.04, Math.min(buffer.duration - 0.01, buffer.duration * 0.92));
-  }
+  configureSampleLoop(source, buffer, program, sustain, note.duration);
   connectSampleSource(context, source, master, program, playbackRate, noteStart, audibleEnd);
   source.start(noteStart, Math.min(0.025, buffer.duration * 0.1));
   source.stop(audibleEnd + 0.08);
   sources.push(source);
+}
+
+function configureSampleLoop(source: AudioBufferSourceNode, buffer: AudioBuffer, program: number, sustain: boolean, durationSteps: number) {
+  if (!sustain || durationSteps <= 1 || buffer.duration <= 0.24 || !isLoopableSampleProgram(program)) {
+    return;
+  }
+
+  source.loop = true;
+  source.loopStart = clamp(buffer.duration * 0.35, 0.12, buffer.duration - 0.08);
+  source.loopEnd = clamp(buffer.duration * 0.86, source.loopStart + 0.04, buffer.duration - 0.01);
+}
+
+function isLoopableSampleProgram(program: number): boolean {
+  return [16, 48, 73, 88].includes(normalizeProgram(program));
 }
 
 function connectSampleSource(

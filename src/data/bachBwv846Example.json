@@ -1,0 +1,4895 @@
+{
+  "bpm": 60,
+  "bars": 35,
+  "beatsPerBar": 4,
+  "beats": 140,
+  "stepsPerBeat": 4,
+  "sustain": true,
+  "tracks": [
+    {
+      "id": "bwv846-track-piano",
+      "name": "钢琴主奏",
+      "color": "#2563eb",
+      "program": 0,
+      "volume": 96,
+      "notes": [
+        {
+          "id": "bwv846-piano-0001",
+          "pitch": 60,
+          "start": 0,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0002",
+          "pitch": 64,
+          "start": 1,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0135",
+          "pitch": 67,
+          "start": 2,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0136",
+          "pitch": 72,
+          "start": 3,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0137",
+          "pitch": 76,
+          "start": 4,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0138",
+          "pitch": 67,
+          "start": 5,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0139",
+          "pitch": 72,
+          "start": 6,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0140",
+          "pitch": 76,
+          "start": 7,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0003",
+          "pitch": 60,
+          "start": 8,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0004",
+          "pitch": 64,
+          "start": 9,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0141",
+          "pitch": 67,
+          "start": 10,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0142",
+          "pitch": 72,
+          "start": 11,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0143",
+          "pitch": 76,
+          "start": 12,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0144",
+          "pitch": 67,
+          "start": 13,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0145",
+          "pitch": 72,
+          "start": 14,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0146",
+          "pitch": 76,
+          "start": 15,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0005",
+          "pitch": 60,
+          "start": 16,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0006",
+          "pitch": 62,
+          "start": 17,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0147",
+          "pitch": 69,
+          "start": 18,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0148",
+          "pitch": 74,
+          "start": 19,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0149",
+          "pitch": 77,
+          "start": 20,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0150",
+          "pitch": 69,
+          "start": 21,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0151",
+          "pitch": 74,
+          "start": 22,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0152",
+          "pitch": 77,
+          "start": 23,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0007",
+          "pitch": 60,
+          "start": 24,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0008",
+          "pitch": 62,
+          "start": 25,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0153",
+          "pitch": 69,
+          "start": 26,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0154",
+          "pitch": 74,
+          "start": 27,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0155",
+          "pitch": 77,
+          "start": 28,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0156",
+          "pitch": 69,
+          "start": 29,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0157",
+          "pitch": 74,
+          "start": 30,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0158",
+          "pitch": 77,
+          "start": 31,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0009",
+          "pitch": 59,
+          "start": 32,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0010",
+          "pitch": 62,
+          "start": 33,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0159",
+          "pitch": 67,
+          "start": 34,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0160",
+          "pitch": 74,
+          "start": 35,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0161",
+          "pitch": 77,
+          "start": 36,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0162",
+          "pitch": 67,
+          "start": 37,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0163",
+          "pitch": 74,
+          "start": 38,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0164",
+          "pitch": 77,
+          "start": 39,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0011",
+          "pitch": 59,
+          "start": 40,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0012",
+          "pitch": 62,
+          "start": 41,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0165",
+          "pitch": 67,
+          "start": 42,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0166",
+          "pitch": 74,
+          "start": 43,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0167",
+          "pitch": 77,
+          "start": 44,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0168",
+          "pitch": 67,
+          "start": 45,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0169",
+          "pitch": 74,
+          "start": 46,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0170",
+          "pitch": 77,
+          "start": 47,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0013",
+          "pitch": 60,
+          "start": 48,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0014",
+          "pitch": 64,
+          "start": 49,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0171",
+          "pitch": 67,
+          "start": 50,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0172",
+          "pitch": 72,
+          "start": 51,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0173",
+          "pitch": 76,
+          "start": 52,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0174",
+          "pitch": 67,
+          "start": 53,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0175",
+          "pitch": 72,
+          "start": 54,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0176",
+          "pitch": 76,
+          "start": 55,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0015",
+          "pitch": 60,
+          "start": 56,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0016",
+          "pitch": 64,
+          "start": 57,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0177",
+          "pitch": 67,
+          "start": 58,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0178",
+          "pitch": 72,
+          "start": 59,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0179",
+          "pitch": 76,
+          "start": 60,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0180",
+          "pitch": 67,
+          "start": 61,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0181",
+          "pitch": 72,
+          "start": 62,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0182",
+          "pitch": 76,
+          "start": 63,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0017",
+          "pitch": 60,
+          "start": 64,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0018",
+          "pitch": 64,
+          "start": 65,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0183",
+          "pitch": 69,
+          "start": 66,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0184",
+          "pitch": 76,
+          "start": 67,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0185",
+          "pitch": 81,
+          "start": 68,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0186",
+          "pitch": 69,
+          "start": 69,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0187",
+          "pitch": 76,
+          "start": 70,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0188",
+          "pitch": 81,
+          "start": 71,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0019",
+          "pitch": 60,
+          "start": 72,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0020",
+          "pitch": 64,
+          "start": 73,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0189",
+          "pitch": 69,
+          "start": 74,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0190",
+          "pitch": 76,
+          "start": 75,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0191",
+          "pitch": 81,
+          "start": 76,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0192",
+          "pitch": 69,
+          "start": 77,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0193",
+          "pitch": 76,
+          "start": 78,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0194",
+          "pitch": 81,
+          "start": 79,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0021",
+          "pitch": 60,
+          "start": 80,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0022",
+          "pitch": 62,
+          "start": 81,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0195",
+          "pitch": 66,
+          "start": 82,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0196",
+          "pitch": 69,
+          "start": 83,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0197",
+          "pitch": 74,
+          "start": 84,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0198",
+          "pitch": 66,
+          "start": 85,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0199",
+          "pitch": 69,
+          "start": 86,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0200",
+          "pitch": 74,
+          "start": 87,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0023",
+          "pitch": 60,
+          "start": 88,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0024",
+          "pitch": 62,
+          "start": 89,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0201",
+          "pitch": 66,
+          "start": 90,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0202",
+          "pitch": 69,
+          "start": 91,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0203",
+          "pitch": 74,
+          "start": 92,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0204",
+          "pitch": 66,
+          "start": 93,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0205",
+          "pitch": 69,
+          "start": 94,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0206",
+          "pitch": 74,
+          "start": 95,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0025",
+          "pitch": 59,
+          "start": 96,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0026",
+          "pitch": 62,
+          "start": 97,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0207",
+          "pitch": 67,
+          "start": 98,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0208",
+          "pitch": 74,
+          "start": 99,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0209",
+          "pitch": 79,
+          "start": 100,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0210",
+          "pitch": 67,
+          "start": 101,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0211",
+          "pitch": 74,
+          "start": 102,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0212",
+          "pitch": 79,
+          "start": 103,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0027",
+          "pitch": 59,
+          "start": 104,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0028",
+          "pitch": 62,
+          "start": 105,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0213",
+          "pitch": 67,
+          "start": 106,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0214",
+          "pitch": 74,
+          "start": 107,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0215",
+          "pitch": 79,
+          "start": 108,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0216",
+          "pitch": 67,
+          "start": 109,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0217",
+          "pitch": 74,
+          "start": 110,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0218",
+          "pitch": 79,
+          "start": 111,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0029",
+          "pitch": 59,
+          "start": 112,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0030",
+          "pitch": 60,
+          "start": 113,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0219",
+          "pitch": 64,
+          "start": 114,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0220",
+          "pitch": 67,
+          "start": 115,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0221",
+          "pitch": 72,
+          "start": 116,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0222",
+          "pitch": 64,
+          "start": 117,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0223",
+          "pitch": 67,
+          "start": 118,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0224",
+          "pitch": 72,
+          "start": 119,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0031",
+          "pitch": 59,
+          "start": 120,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0032",
+          "pitch": 60,
+          "start": 121,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0225",
+          "pitch": 64,
+          "start": 122,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0226",
+          "pitch": 67,
+          "start": 123,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0227",
+          "pitch": 72,
+          "start": 124,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0228",
+          "pitch": 64,
+          "start": 125,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0229",
+          "pitch": 67,
+          "start": 126,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0230",
+          "pitch": 72,
+          "start": 127,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0033",
+          "pitch": 57,
+          "start": 128,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0034",
+          "pitch": 60,
+          "start": 129,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0231",
+          "pitch": 64,
+          "start": 130,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0232",
+          "pitch": 67,
+          "start": 131,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0233",
+          "pitch": 72,
+          "start": 132,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0234",
+          "pitch": 64,
+          "start": 133,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0235",
+          "pitch": 67,
+          "start": 134,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0236",
+          "pitch": 72,
+          "start": 135,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0035",
+          "pitch": 57,
+          "start": 136,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0036",
+          "pitch": 60,
+          "start": 137,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0237",
+          "pitch": 64,
+          "start": 138,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0238",
+          "pitch": 67,
+          "start": 139,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0239",
+          "pitch": 72,
+          "start": 140,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0240",
+          "pitch": 64,
+          "start": 141,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0241",
+          "pitch": 67,
+          "start": 142,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0242",
+          "pitch": 72,
+          "start": 143,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0037",
+          "pitch": 50,
+          "start": 144,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0038",
+          "pitch": 57,
+          "start": 145,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0243",
+          "pitch": 62,
+          "start": 146,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0244",
+          "pitch": 66,
+          "start": 147,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0245",
+          "pitch": 72,
+          "start": 148,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0246",
+          "pitch": 62,
+          "start": 149,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0247",
+          "pitch": 66,
+          "start": 150,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0248",
+          "pitch": 72,
+          "start": 151,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0039",
+          "pitch": 50,
+          "start": 152,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0040",
+          "pitch": 57,
+          "start": 153,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0249",
+          "pitch": 62,
+          "start": 154,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0250",
+          "pitch": 66,
+          "start": 155,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0251",
+          "pitch": 72,
+          "start": 156,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0252",
+          "pitch": 62,
+          "start": 157,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0253",
+          "pitch": 66,
+          "start": 158,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0254",
+          "pitch": 72,
+          "start": 159,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0041",
+          "pitch": 55,
+          "start": 160,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0042",
+          "pitch": 59,
+          "start": 161,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0255",
+          "pitch": 62,
+          "start": 162,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0256",
+          "pitch": 67,
+          "start": 163,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0257",
+          "pitch": 71,
+          "start": 164,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0258",
+          "pitch": 62,
+          "start": 165,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0259",
+          "pitch": 67,
+          "start": 166,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0260",
+          "pitch": 71,
+          "start": 167,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0043",
+          "pitch": 55,
+          "start": 168,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0044",
+          "pitch": 59,
+          "start": 169,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0261",
+          "pitch": 62,
+          "start": 170,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0262",
+          "pitch": 67,
+          "start": 171,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0263",
+          "pitch": 71,
+          "start": 172,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0264",
+          "pitch": 62,
+          "start": 173,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0265",
+          "pitch": 67,
+          "start": 174,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0266",
+          "pitch": 71,
+          "start": 175,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0045",
+          "pitch": 55,
+          "start": 176,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0046",
+          "pitch": 58,
+          "start": 177,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0267",
+          "pitch": 64,
+          "start": 178,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0268",
+          "pitch": 67,
+          "start": 179,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0269",
+          "pitch": 73,
+          "start": 180,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0270",
+          "pitch": 64,
+          "start": 181,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0271",
+          "pitch": 67,
+          "start": 182,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0272",
+          "pitch": 73,
+          "start": 183,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0047",
+          "pitch": 55,
+          "start": 184,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0048",
+          "pitch": 58,
+          "start": 185,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0273",
+          "pitch": 64,
+          "start": 186,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0274",
+          "pitch": 67,
+          "start": 187,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0275",
+          "pitch": 73,
+          "start": 188,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0276",
+          "pitch": 64,
+          "start": 189,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0277",
+          "pitch": 67,
+          "start": 190,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0278",
+          "pitch": 73,
+          "start": 191,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0049",
+          "pitch": 53,
+          "start": 192,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0050",
+          "pitch": 57,
+          "start": 193,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0279",
+          "pitch": 62,
+          "start": 194,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0280",
+          "pitch": 69,
+          "start": 195,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0281",
+          "pitch": 74,
+          "start": 196,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0282",
+          "pitch": 62,
+          "start": 197,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0283",
+          "pitch": 69,
+          "start": 198,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0284",
+          "pitch": 74,
+          "start": 199,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0051",
+          "pitch": 53,
+          "start": 200,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0052",
+          "pitch": 57,
+          "start": 201,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0285",
+          "pitch": 62,
+          "start": 202,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0286",
+          "pitch": 69,
+          "start": 203,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0287",
+          "pitch": 74,
+          "start": 204,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0288",
+          "pitch": 62,
+          "start": 205,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0289",
+          "pitch": 69,
+          "start": 206,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0290",
+          "pitch": 74,
+          "start": 207,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0053",
+          "pitch": 53,
+          "start": 208,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0054",
+          "pitch": 56,
+          "start": 209,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0291",
+          "pitch": 62,
+          "start": 210,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0292",
+          "pitch": 65,
+          "start": 211,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0293",
+          "pitch": 71,
+          "start": 212,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0294",
+          "pitch": 62,
+          "start": 213,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0295",
+          "pitch": 65,
+          "start": 214,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0296",
+          "pitch": 71,
+          "start": 215,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0055",
+          "pitch": 53,
+          "start": 216,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0056",
+          "pitch": 56,
+          "start": 217,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0297",
+          "pitch": 62,
+          "start": 218,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0298",
+          "pitch": 65,
+          "start": 219,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0299",
+          "pitch": 71,
+          "start": 220,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0300",
+          "pitch": 62,
+          "start": 221,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0301",
+          "pitch": 65,
+          "start": 222,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0302",
+          "pitch": 71,
+          "start": 223,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0057",
+          "pitch": 52,
+          "start": 224,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0058",
+          "pitch": 55,
+          "start": 225,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0303",
+          "pitch": 60,
+          "start": 226,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0304",
+          "pitch": 67,
+          "start": 227,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0305",
+          "pitch": 72,
+          "start": 228,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0306",
+          "pitch": 60,
+          "start": 229,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0307",
+          "pitch": 67,
+          "start": 230,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0308",
+          "pitch": 72,
+          "start": 231,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0059",
+          "pitch": 52,
+          "start": 232,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0060",
+          "pitch": 55,
+          "start": 233,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0309",
+          "pitch": 60,
+          "start": 234,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0310",
+          "pitch": 67,
+          "start": 235,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0311",
+          "pitch": 72,
+          "start": 236,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0312",
+          "pitch": 60,
+          "start": 237,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0313",
+          "pitch": 67,
+          "start": 238,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0314",
+          "pitch": 72,
+          "start": 239,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0061",
+          "pitch": 52,
+          "start": 240,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0062",
+          "pitch": 53,
+          "start": 241,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0315",
+          "pitch": 57,
+          "start": 242,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0316",
+          "pitch": 60,
+          "start": 243,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0317",
+          "pitch": 65,
+          "start": 244,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0318",
+          "pitch": 57,
+          "start": 245,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0319",
+          "pitch": 60,
+          "start": 246,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0320",
+          "pitch": 65,
+          "start": 247,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0063",
+          "pitch": 52,
+          "start": 248,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0064",
+          "pitch": 53,
+          "start": 249,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0321",
+          "pitch": 57,
+          "start": 250,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0322",
+          "pitch": 60,
+          "start": 251,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0323",
+          "pitch": 65,
+          "start": 252,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0324",
+          "pitch": 57,
+          "start": 253,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0325",
+          "pitch": 60,
+          "start": 254,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0326",
+          "pitch": 65,
+          "start": 255,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0065",
+          "pitch": 50,
+          "start": 256,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0066",
+          "pitch": 53,
+          "start": 257,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0327",
+          "pitch": 57,
+          "start": 258,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0328",
+          "pitch": 60,
+          "start": 259,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0329",
+          "pitch": 65,
+          "start": 260,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0330",
+          "pitch": 57,
+          "start": 261,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0331",
+          "pitch": 60,
+          "start": 262,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0332",
+          "pitch": 65,
+          "start": 263,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0067",
+          "pitch": 50,
+          "start": 264,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0068",
+          "pitch": 53,
+          "start": 265,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0333",
+          "pitch": 57,
+          "start": 266,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0334",
+          "pitch": 60,
+          "start": 267,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0335",
+          "pitch": 65,
+          "start": 268,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0336",
+          "pitch": 57,
+          "start": 269,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0337",
+          "pitch": 60,
+          "start": 270,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0338",
+          "pitch": 65,
+          "start": 271,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0069",
+          "pitch": 43,
+          "start": 272,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0070",
+          "pitch": 50,
+          "start": 273,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0339",
+          "pitch": 55,
+          "start": 274,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0340",
+          "pitch": 59,
+          "start": 275,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0341",
+          "pitch": 65,
+          "start": 276,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0342",
+          "pitch": 55,
+          "start": 277,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0343",
+          "pitch": 59,
+          "start": 278,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0344",
+          "pitch": 65,
+          "start": 279,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0071",
+          "pitch": 43,
+          "start": 280,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0072",
+          "pitch": 50,
+          "start": 281,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0345",
+          "pitch": 55,
+          "start": 282,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0346",
+          "pitch": 59,
+          "start": 283,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0347",
+          "pitch": 65,
+          "start": 284,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0348",
+          "pitch": 55,
+          "start": 285,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0349",
+          "pitch": 59,
+          "start": 286,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0350",
+          "pitch": 65,
+          "start": 287,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0073",
+          "pitch": 48,
+          "start": 288,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0074",
+          "pitch": 52,
+          "start": 289,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0351",
+          "pitch": 55,
+          "start": 290,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0352",
+          "pitch": 60,
+          "start": 291,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0353",
+          "pitch": 64,
+          "start": 292,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0354",
+          "pitch": 55,
+          "start": 293,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0355",
+          "pitch": 60,
+          "start": 294,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0356",
+          "pitch": 64,
+          "start": 295,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0075",
+          "pitch": 48,
+          "start": 296,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0076",
+          "pitch": 52,
+          "start": 297,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0357",
+          "pitch": 55,
+          "start": 298,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0358",
+          "pitch": 60,
+          "start": 299,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0359",
+          "pitch": 64,
+          "start": 300,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0360",
+          "pitch": 55,
+          "start": 301,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0361",
+          "pitch": 60,
+          "start": 302,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0362",
+          "pitch": 64,
+          "start": 303,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0077",
+          "pitch": 48,
+          "start": 304,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0078",
+          "pitch": 55,
+          "start": 305,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0363",
+          "pitch": 58,
+          "start": 306,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0364",
+          "pitch": 60,
+          "start": 307,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0365",
+          "pitch": 64,
+          "start": 308,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0366",
+          "pitch": 58,
+          "start": 309,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0367",
+          "pitch": 60,
+          "start": 310,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0368",
+          "pitch": 64,
+          "start": 311,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0079",
+          "pitch": 48,
+          "start": 312,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0080",
+          "pitch": 55,
+          "start": 313,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0369",
+          "pitch": 58,
+          "start": 314,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0370",
+          "pitch": 60,
+          "start": 315,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0371",
+          "pitch": 64,
+          "start": 316,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0372",
+          "pitch": 58,
+          "start": 317,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0373",
+          "pitch": 60,
+          "start": 318,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0374",
+          "pitch": 64,
+          "start": 319,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0081",
+          "pitch": 41,
+          "start": 320,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0082",
+          "pitch": 53,
+          "start": 321,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0375",
+          "pitch": 57,
+          "start": 322,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0376",
+          "pitch": 60,
+          "start": 323,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0377",
+          "pitch": 64,
+          "start": 324,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0378",
+          "pitch": 57,
+          "start": 325,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0379",
+          "pitch": 60,
+          "start": 326,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0380",
+          "pitch": 64,
+          "start": 327,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0083",
+          "pitch": 41,
+          "start": 328,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0084",
+          "pitch": 53,
+          "start": 329,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0381",
+          "pitch": 57,
+          "start": 330,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0382",
+          "pitch": 60,
+          "start": 331,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0383",
+          "pitch": 64,
+          "start": 332,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0384",
+          "pitch": 57,
+          "start": 333,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0385",
+          "pitch": 60,
+          "start": 334,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0386",
+          "pitch": 64,
+          "start": 335,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0085",
+          "pitch": 42,
+          "start": 336,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0086",
+          "pitch": 48,
+          "start": 337,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0387",
+          "pitch": 57,
+          "start": 338,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0388",
+          "pitch": 60,
+          "start": 339,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0389",
+          "pitch": 63,
+          "start": 340,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0390",
+          "pitch": 57,
+          "start": 341,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0391",
+          "pitch": 60,
+          "start": 342,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0392",
+          "pitch": 63,
+          "start": 343,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0087",
+          "pitch": 42,
+          "start": 344,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0088",
+          "pitch": 48,
+          "start": 345,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0393",
+          "pitch": 57,
+          "start": 346,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0394",
+          "pitch": 60,
+          "start": 347,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0395",
+          "pitch": 63,
+          "start": 348,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0396",
+          "pitch": 57,
+          "start": 349,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0397",
+          "pitch": 60,
+          "start": 350,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0398",
+          "pitch": 63,
+          "start": 351,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0089",
+          "pitch": 44,
+          "start": 352,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0090",
+          "pitch": 53,
+          "start": 353,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0399",
+          "pitch": 59,
+          "start": 354,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0400",
+          "pitch": 60,
+          "start": 355,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0401",
+          "pitch": 62,
+          "start": 356,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0402",
+          "pitch": 59,
+          "start": 357,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0403",
+          "pitch": 60,
+          "start": 358,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0404",
+          "pitch": 62,
+          "start": 359,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0091",
+          "pitch": 44,
+          "start": 360,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0092",
+          "pitch": 53,
+          "start": 361,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0405",
+          "pitch": 59,
+          "start": 362,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0406",
+          "pitch": 60,
+          "start": 363,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0407",
+          "pitch": 62,
+          "start": 364,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0408",
+          "pitch": 59,
+          "start": 365,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0409",
+          "pitch": 60,
+          "start": 366,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0410",
+          "pitch": 62,
+          "start": 367,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0093",
+          "pitch": 43,
+          "start": 368,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0094",
+          "pitch": 53,
+          "start": 369,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0411",
+          "pitch": 55,
+          "start": 370,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0412",
+          "pitch": 59,
+          "start": 371,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0413",
+          "pitch": 62,
+          "start": 372,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0414",
+          "pitch": 55,
+          "start": 373,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0415",
+          "pitch": 59,
+          "start": 374,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0416",
+          "pitch": 62,
+          "start": 375,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0095",
+          "pitch": 43,
+          "start": 376,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0096",
+          "pitch": 53,
+          "start": 377,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0417",
+          "pitch": 55,
+          "start": 378,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0418",
+          "pitch": 59,
+          "start": 379,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0419",
+          "pitch": 62,
+          "start": 380,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0420",
+          "pitch": 55,
+          "start": 381,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0421",
+          "pitch": 59,
+          "start": 382,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0422",
+          "pitch": 62,
+          "start": 383,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0097",
+          "pitch": 43,
+          "start": 384,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0098",
+          "pitch": 52,
+          "start": 385,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0423",
+          "pitch": 55,
+          "start": 386,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0424",
+          "pitch": 60,
+          "start": 387,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0425",
+          "pitch": 64,
+          "start": 388,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0426",
+          "pitch": 55,
+          "start": 389,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0427",
+          "pitch": 60,
+          "start": 390,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0428",
+          "pitch": 64,
+          "start": 391,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0099",
+          "pitch": 43,
+          "start": 392,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0100",
+          "pitch": 52,
+          "start": 393,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0429",
+          "pitch": 55,
+          "start": 394,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0430",
+          "pitch": 60,
+          "start": 395,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0431",
+          "pitch": 64,
+          "start": 396,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0432",
+          "pitch": 55,
+          "start": 397,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0433",
+          "pitch": 60,
+          "start": 398,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0434",
+          "pitch": 64,
+          "start": 399,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0101",
+          "pitch": 43,
+          "start": 400,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0102",
+          "pitch": 50,
+          "start": 401,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0435",
+          "pitch": 55,
+          "start": 402,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0436",
+          "pitch": 60,
+          "start": 403,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0437",
+          "pitch": 65,
+          "start": 404,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0438",
+          "pitch": 55,
+          "start": 405,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0439",
+          "pitch": 60,
+          "start": 406,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0440",
+          "pitch": 65,
+          "start": 407,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0103",
+          "pitch": 43,
+          "start": 408,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0104",
+          "pitch": 50,
+          "start": 409,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0441",
+          "pitch": 55,
+          "start": 410,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0442",
+          "pitch": 60,
+          "start": 411,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0443",
+          "pitch": 65,
+          "start": 412,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0444",
+          "pitch": 55,
+          "start": 413,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0445",
+          "pitch": 60,
+          "start": 414,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0446",
+          "pitch": 65,
+          "start": 415,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0105",
+          "pitch": 43,
+          "start": 416,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0106",
+          "pitch": 50,
+          "start": 417,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0447",
+          "pitch": 55,
+          "start": 418,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0448",
+          "pitch": 59,
+          "start": 419,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0449",
+          "pitch": 65,
+          "start": 420,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0450",
+          "pitch": 55,
+          "start": 421,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0451",
+          "pitch": 59,
+          "start": 422,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0452",
+          "pitch": 65,
+          "start": 423,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0107",
+          "pitch": 43,
+          "start": 424,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0108",
+          "pitch": 50,
+          "start": 425,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0453",
+          "pitch": 55,
+          "start": 426,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0454",
+          "pitch": 59,
+          "start": 427,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0455",
+          "pitch": 65,
+          "start": 428,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0456",
+          "pitch": 55,
+          "start": 429,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0457",
+          "pitch": 59,
+          "start": 430,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0458",
+          "pitch": 65,
+          "start": 431,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0109",
+          "pitch": 43,
+          "start": 432,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0110",
+          "pitch": 51,
+          "start": 433,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0459",
+          "pitch": 57,
+          "start": 434,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0460",
+          "pitch": 60,
+          "start": 435,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0461",
+          "pitch": 66,
+          "start": 436,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0462",
+          "pitch": 57,
+          "start": 437,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0463",
+          "pitch": 60,
+          "start": 438,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0464",
+          "pitch": 66,
+          "start": 439,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0111",
+          "pitch": 43,
+          "start": 440,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0112",
+          "pitch": 51,
+          "start": 441,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0465",
+          "pitch": 57,
+          "start": 442,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0466",
+          "pitch": 60,
+          "start": 443,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0467",
+          "pitch": 66,
+          "start": 444,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0468",
+          "pitch": 57,
+          "start": 445,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0469",
+          "pitch": 60,
+          "start": 446,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0470",
+          "pitch": 66,
+          "start": 447,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0113",
+          "pitch": 43,
+          "start": 448,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0114",
+          "pitch": 52,
+          "start": 449,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0471",
+          "pitch": 55,
+          "start": 450,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0472",
+          "pitch": 60,
+          "start": 451,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0473",
+          "pitch": 67,
+          "start": 452,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0474",
+          "pitch": 55,
+          "start": 453,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0475",
+          "pitch": 60,
+          "start": 454,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0476",
+          "pitch": 67,
+          "start": 455,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0115",
+          "pitch": 43,
+          "start": 456,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0116",
+          "pitch": 52,
+          "start": 457,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0477",
+          "pitch": 55,
+          "start": 458,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0478",
+          "pitch": 60,
+          "start": 459,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0479",
+          "pitch": 67,
+          "start": 460,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0480",
+          "pitch": 55,
+          "start": 461,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0481",
+          "pitch": 60,
+          "start": 462,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0482",
+          "pitch": 67,
+          "start": 463,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0117",
+          "pitch": 43,
+          "start": 464,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0118",
+          "pitch": 50,
+          "start": 465,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0483",
+          "pitch": 55,
+          "start": 466,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0484",
+          "pitch": 60,
+          "start": 467,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0485",
+          "pitch": 65,
+          "start": 468,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0486",
+          "pitch": 55,
+          "start": 469,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0487",
+          "pitch": 60,
+          "start": 470,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0488",
+          "pitch": 65,
+          "start": 471,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0119",
+          "pitch": 43,
+          "start": 472,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0120",
+          "pitch": 50,
+          "start": 473,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0489",
+          "pitch": 55,
+          "start": 474,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0490",
+          "pitch": 60,
+          "start": 475,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0491",
+          "pitch": 65,
+          "start": 476,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0492",
+          "pitch": 55,
+          "start": 477,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0493",
+          "pitch": 60,
+          "start": 478,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0494",
+          "pitch": 65,
+          "start": 479,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0121",
+          "pitch": 43,
+          "start": 480,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0122",
+          "pitch": 50,
+          "start": 481,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0495",
+          "pitch": 55,
+          "start": 482,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0496",
+          "pitch": 59,
+          "start": 483,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0497",
+          "pitch": 65,
+          "start": 484,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0498",
+          "pitch": 55,
+          "start": 485,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0499",
+          "pitch": 59,
+          "start": 486,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0500",
+          "pitch": 65,
+          "start": 487,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0123",
+          "pitch": 43,
+          "start": 488,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0124",
+          "pitch": 50,
+          "start": 489,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0501",
+          "pitch": 55,
+          "start": 490,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0502",
+          "pitch": 59,
+          "start": 491,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0503",
+          "pitch": 65,
+          "start": 492,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0504",
+          "pitch": 55,
+          "start": 493,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0505",
+          "pitch": 59,
+          "start": 494,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0506",
+          "pitch": 65,
+          "start": 495,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0125",
+          "pitch": 36,
+          "start": 496,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0126",
+          "pitch": 48,
+          "start": 497,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0507",
+          "pitch": 55,
+          "start": 498,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0508",
+          "pitch": 58,
+          "start": 499,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0509",
+          "pitch": 64,
+          "start": 500,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0510",
+          "pitch": 55,
+          "start": 501,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0511",
+          "pitch": 58,
+          "start": 502,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0512",
+          "pitch": 64,
+          "start": 503,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0127",
+          "pitch": 36,
+          "start": 504,
+          "duration": 8,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0128",
+          "pitch": 48,
+          "start": 505,
+          "duration": 7,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0513",
+          "pitch": 55,
+          "start": 506,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0514",
+          "pitch": 58,
+          "start": 507,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0515",
+          "pitch": 64,
+          "start": 508,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0516",
+          "pitch": 55,
+          "start": 509,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0517",
+          "pitch": 58,
+          "start": 510,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0518",
+          "pitch": 64,
+          "start": 511,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0129",
+          "pitch": 36,
+          "start": 512,
+          "duration": 16,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0130",
+          "pitch": 48,
+          "start": 513,
+          "duration": 15,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0519",
+          "pitch": 53,
+          "start": 514,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0520",
+          "pitch": 57,
+          "start": 515,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0521",
+          "pitch": 60,
+          "start": 516,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0522",
+          "pitch": 65,
+          "start": 517,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0523",
+          "pitch": 60,
+          "start": 518,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0524",
+          "pitch": 57,
+          "start": 519,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0525",
+          "pitch": 60,
+          "start": 520,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0526",
+          "pitch": 57,
+          "start": 521,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0527",
+          "pitch": 53,
+          "start": 522,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0528",
+          "pitch": 57,
+          "start": 523,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0529",
+          "pitch": 53,
+          "start": 524,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0530",
+          "pitch": 50,
+          "start": 525,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0531",
+          "pitch": 53,
+          "start": 526,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0532",
+          "pitch": 50,
+          "start": 527,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0131",
+          "pitch": 36,
+          "start": 528,
+          "duration": 16,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0132",
+          "pitch": 47,
+          "start": 529,
+          "duration": 15,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0533",
+          "pitch": 67,
+          "start": 530,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0534",
+          "pitch": 71,
+          "start": 531,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0535",
+          "pitch": 74,
+          "start": 532,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0536",
+          "pitch": 77,
+          "start": 533,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0537",
+          "pitch": 74,
+          "start": 534,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0538",
+          "pitch": 71,
+          "start": 535,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0539",
+          "pitch": 74,
+          "start": 536,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0540",
+          "pitch": 71,
+          "start": 537,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0541",
+          "pitch": 67,
+          "start": 538,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0542",
+          "pitch": 71,
+          "start": 539,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0543",
+          "pitch": 62,
+          "start": 540,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0544",
+          "pitch": 65,
+          "start": 541,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0545",
+          "pitch": 64,
+          "start": 542,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0546",
+          "pitch": 62,
+          "start": 543,
+          "duration": 1,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0134",
+          "pitch": 36,
+          "start": 544,
+          "duration": 16,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0133",
+          "pitch": 48,
+          "start": 544,
+          "duration": 16,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0547",
+          "pitch": 64,
+          "start": 544,
+          "duration": 16,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0548",
+          "pitch": 67,
+          "start": 544,
+          "duration": 16,
+          "velocity": 90
+        },
+        {
+          "id": "bwv846-piano-0549",
+          "pitch": 72,
+          "start": 544,
+          "duration": 16,
+          "velocity": 90
+        }
+      ]
+    },
+    {
+      "id": "bwv846-track-bass",
+      "name": "低音支撑",
+      "color": "#dc2626",
+      "program": 32,
+      "volume": 72,
+      "notes": [
+        {
+          "id": "bwv846-bass-01",
+          "pitch": 48,
+          "start": 0,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-02",
+          "pitch": 48,
+          "start": 16,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-03",
+          "pitch": 47,
+          "start": 32,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-04",
+          "pitch": 48,
+          "start": 48,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-05",
+          "pitch": 48,
+          "start": 64,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-06",
+          "pitch": 48,
+          "start": 80,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-07",
+          "pitch": 47,
+          "start": 96,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-08",
+          "pitch": 47,
+          "start": 112,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-09",
+          "pitch": 45,
+          "start": 128,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-10",
+          "pitch": 38,
+          "start": 144,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-11",
+          "pitch": 43,
+          "start": 160,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-12",
+          "pitch": 43,
+          "start": 176,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-13",
+          "pitch": 41,
+          "start": 192,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-14",
+          "pitch": 41,
+          "start": 208,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-15",
+          "pitch": 40,
+          "start": 224,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-16",
+          "pitch": 40,
+          "start": 240,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-17",
+          "pitch": 38,
+          "start": 256,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-18",
+          "pitch": 43,
+          "start": 272,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-19",
+          "pitch": 36,
+          "start": 288,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-20",
+          "pitch": 36,
+          "start": 304,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-21",
+          "pitch": 41,
+          "start": 320,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-22",
+          "pitch": 42,
+          "start": 336,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-23",
+          "pitch": 44,
+          "start": 352,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-24",
+          "pitch": 43,
+          "start": 368,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-25",
+          "pitch": 43,
+          "start": 384,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-26",
+          "pitch": 43,
+          "start": 400,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-27",
+          "pitch": 43,
+          "start": 416,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-28",
+          "pitch": 43,
+          "start": 432,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-29",
+          "pitch": 43,
+          "start": 448,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-30",
+          "pitch": 43,
+          "start": 464,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-31",
+          "pitch": 43,
+          "start": 480,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-32",
+          "pitch": 36,
+          "start": 496,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-33",
+          "pitch": 36,
+          "start": 512,
+          "duration": 16,
+          "velocity": 58
+        },
+        {
+          "id": "bwv846-bass-34",
+          "pitch": 36,
+          "start": 528,
+          "duration": 16,
+          "velocity": 66
+        },
+        {
+          "id": "bwv846-bass-35",
+          "pitch": 36,
+          "start": 544,
+          "duration": 16,
+          "velocity": 66
+        }
+      ]
+    },
+    {
+      "id": "bwv846-track-strings",
+      "name": "弦乐和声",
+      "color": "#16a34a",
+      "program": 48,
+      "volume": 46,
+      "notes": [
+        {
+          "id": "bwv846-pad-01-1",
+          "pitch": 67,
+          "start": 0,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-01-2",
+          "pitch": 72,
+          "start": 0,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-01-3",
+          "pitch": 76,
+          "start": 0,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-02-1",
+          "pitch": 69,
+          "start": 16,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-02-2",
+          "pitch": 74,
+          "start": 16,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-02-3",
+          "pitch": 77,
+          "start": 16,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-03-1",
+          "pitch": 67,
+          "start": 32,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-03-2",
+          "pitch": 74,
+          "start": 32,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-03-3",
+          "pitch": 77,
+          "start": 32,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-04-1",
+          "pitch": 67,
+          "start": 48,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-04-2",
+          "pitch": 72,
+          "start": 48,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-04-3",
+          "pitch": 76,
+          "start": 48,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-05-1",
+          "pitch": 69,
+          "start": 64,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-05-2",
+          "pitch": 76,
+          "start": 64,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-05-3",
+          "pitch": 81,
+          "start": 64,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-06-1",
+          "pitch": 66,
+          "start": 80,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-06-2",
+          "pitch": 69,
+          "start": 80,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-06-3",
+          "pitch": 74,
+          "start": 80,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-07-1",
+          "pitch": 67,
+          "start": 96,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-07-2",
+          "pitch": 74,
+          "start": 96,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-07-3",
+          "pitch": 79,
+          "start": 96,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-08-1",
+          "pitch": 64,
+          "start": 112,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-08-2",
+          "pitch": 67,
+          "start": 112,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-08-3",
+          "pitch": 72,
+          "start": 112,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-09-1",
+          "pitch": 64,
+          "start": 128,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-09-2",
+          "pitch": 67,
+          "start": 128,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-09-3",
+          "pitch": 72,
+          "start": 128,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-10-1",
+          "pitch": 62,
+          "start": 144,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-10-2",
+          "pitch": 66,
+          "start": 144,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-10-3",
+          "pitch": 72,
+          "start": 144,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-11-1",
+          "pitch": 62,
+          "start": 160,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-11-2",
+          "pitch": 67,
+          "start": 160,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-11-3",
+          "pitch": 71,
+          "start": 160,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-12-1",
+          "pitch": 64,
+          "start": 176,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-12-2",
+          "pitch": 67,
+          "start": 176,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-12-3",
+          "pitch": 73,
+          "start": 176,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-13-1",
+          "pitch": 62,
+          "start": 192,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-13-2",
+          "pitch": 69,
+          "start": 192,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-13-3",
+          "pitch": 74,
+          "start": 192,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-14-1",
+          "pitch": 62,
+          "start": 208,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-14-2",
+          "pitch": 65,
+          "start": 208,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-14-3",
+          "pitch": 71,
+          "start": 208,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-15-1",
+          "pitch": 60,
+          "start": 224,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-15-2",
+          "pitch": 67,
+          "start": 224,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-15-3",
+          "pitch": 72,
+          "start": 224,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-16-1",
+          "pitch": 57,
+          "start": 240,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-16-2",
+          "pitch": 60,
+          "start": 240,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-16-3",
+          "pitch": 65,
+          "start": 240,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-17-1",
+          "pitch": 57,
+          "start": 256,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-17-2",
+          "pitch": 60,
+          "start": 256,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-17-3",
+          "pitch": 65,
+          "start": 256,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-18-1",
+          "pitch": 55,
+          "start": 272,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-18-2",
+          "pitch": 59,
+          "start": 272,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-18-3",
+          "pitch": 65,
+          "start": 272,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-19-1",
+          "pitch": 55,
+          "start": 288,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-19-2",
+          "pitch": 60,
+          "start": 288,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-19-3",
+          "pitch": 64,
+          "start": 288,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-20-1",
+          "pitch": 58,
+          "start": 304,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-20-2",
+          "pitch": 60,
+          "start": 304,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-20-3",
+          "pitch": 64,
+          "start": 304,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-21-1",
+          "pitch": 57,
+          "start": 320,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-21-2",
+          "pitch": 60,
+          "start": 320,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-21-3",
+          "pitch": 64,
+          "start": 320,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-22-1",
+          "pitch": 57,
+          "start": 336,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-22-2",
+          "pitch": 60,
+          "start": 336,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-22-3",
+          "pitch": 63,
+          "start": 336,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-23-1",
+          "pitch": 59,
+          "start": 352,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-23-2",
+          "pitch": 60,
+          "start": 352,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-23-3",
+          "pitch": 62,
+          "start": 352,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-24-1",
+          "pitch": 55,
+          "start": 368,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-24-2",
+          "pitch": 59,
+          "start": 368,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-24-3",
+          "pitch": 62,
+          "start": 368,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-25-1",
+          "pitch": 55,
+          "start": 384,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-25-2",
+          "pitch": 60,
+          "start": 384,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-25-3",
+          "pitch": 64,
+          "start": 384,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-26-1",
+          "pitch": 55,
+          "start": 400,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-26-2",
+          "pitch": 60,
+          "start": 400,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-26-3",
+          "pitch": 65,
+          "start": 400,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-27-1",
+          "pitch": 55,
+          "start": 416,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-27-2",
+          "pitch": 59,
+          "start": 416,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-27-3",
+          "pitch": 65,
+          "start": 416,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-28-1",
+          "pitch": 57,
+          "start": 432,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-28-2",
+          "pitch": 60,
+          "start": 432,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-28-3",
+          "pitch": 66,
+          "start": 432,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-29-1",
+          "pitch": 55,
+          "start": 448,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-29-2",
+          "pitch": 60,
+          "start": 448,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-29-3",
+          "pitch": 67,
+          "start": 448,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-30-1",
+          "pitch": 55,
+          "start": 464,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-30-2",
+          "pitch": 60,
+          "start": 464,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-30-3",
+          "pitch": 65,
+          "start": 464,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-31-1",
+          "pitch": 55,
+          "start": 480,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-31-2",
+          "pitch": 59,
+          "start": 480,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-31-3",
+          "pitch": 65,
+          "start": 480,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-32-1",
+          "pitch": 55,
+          "start": 496,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-32-2",
+          "pitch": 58,
+          "start": 496,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-32-3",
+          "pitch": 64,
+          "start": 496,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-33-1",
+          "pitch": 57,
+          "start": 512,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-33-2",
+          "pitch": 60,
+          "start": 512,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-33-3",
+          "pitch": 65,
+          "start": 512,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-34-1",
+          "pitch": 71,
+          "start": 528,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-34-2",
+          "pitch": 74,
+          "start": 528,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-34-3",
+          "pitch": 77,
+          "start": 528,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-pad-35-1",
+          "pitch": 64,
+          "start": 544,
+          "duration": 16,
+          "velocity": 34
+        },
+        {
+          "id": "bwv846-pad-35-2",
+          "pitch": 67,
+          "start": 544,
+          "duration": 16,
+          "velocity": 38
+        },
+        {
+          "id": "bwv846-pad-35-3",
+          "pitch": 72,
+          "start": 544,
+          "duration": 16,
+          "velocity": 42
+        },
+        {
+          "id": "bwv846-final-1",
+          "pitch": 48,
+          "start": 544,
+          "duration": 16,
+          "velocity": 46
+        },
+        {
+          "id": "bwv846-final-2",
+          "pitch": 52,
+          "start": 544,
+          "duration": 16,
+          "velocity": 49
+        },
+        {
+          "id": "bwv846-final-3",
+          "pitch": 55,
+          "start": 544,
+          "duration": 16,
+          "velocity": 52
+        },
+        {
+          "id": "bwv846-final-4",
+          "pitch": 60,
+          "start": 544,
+          "duration": 16,
+          "velocity": 55
+        },
+        {
+          "id": "bwv846-final-5",
+          "pitch": 64,
+          "start": 544,
+          "duration": 16,
+          "velocity": 58
+        }
+      ]
+    }
+  ]
+}

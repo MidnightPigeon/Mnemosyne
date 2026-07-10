@@ -1,5 +1,6 @@
 import { type PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { audioExamples } from "../data/audioExamples";
 import {
   exportCanvasJpg,
   exportCanvasPng,
@@ -167,6 +168,7 @@ const uiText = {
     importMidi: "导入 MIDI",
     addTrack: "添加音轨",
     deleteTrack: "删除音轨",
+    audioExample: "音频示例",
     instrument: "音色",
     volume: "音量",
     uiZoom: "界面缩放",
@@ -274,6 +276,7 @@ const uiText = {
     importMidi: "Import MIDI",
     addTrack: "Add track",
     deleteTrack: "Delete track",
+    audioExample: "Audio example",
     instrument: "Instrument",
     volume: "Volume",
     uiZoom: "UI zoom",
@@ -657,7 +660,7 @@ export function App() {
         {selectedDraft?.kind === "pixel" ? (
           <PixelEditor canvas={draftCanvas} onCanvasChange={setDraftCanvas} onTitleChange={setDraftTitle} theme={theme} title={draftTitle} ui={ui} />
         ) : selectedDraft?.kind === "melody" ? (
-          <MelodyEditor language={language} melody={draftMelody} onMelodyChange={setDraftMelody} onTitleChange={setDraftTitle} theme={theme} title={draftTitle} ui={ui} />
+          <MelodyEditor key={selectedDraft.id} language={language} melody={draftMelody} onMelodyChange={setDraftMelody} onTitleChange={setDraftTitle} theme={theme} title={draftTitle} ui={ui} />
         ) : (
           <TextEditor
             body={draftBody}
@@ -765,10 +768,13 @@ function MelodyEditor({
   const [hoverNote, setHoverNote] = useState<{ pitch: number; start: number } | null>(null);
   const [noteLength, setNoteLength] = useState(1);
   const [rollZoom, setRollZoom] = useState(1);
+  const [editingTrackId, setEditingTrackId] = useState<string | null>(null);
+  const [editingTrackName, setEditingTrackName] = useState("");
+  const [selectedAudioExampleId, setSelectedAudioExampleId] = useState(audioExamples[0]?.id ?? "");
   const playbackRef = useRef<{ id: number; control?: PlaybackControls }>({ id: 0 });
   const rollScrollRef = useRef<HTMLDivElement | null>(null);
   const clip = normalizeMelodyClip(melody);
-  const steps = Math.max(4, Math.min(768, clip.bars * clip.beatsPerBar * clip.stepsPerBeat));
+  const steps = Math.max(4, Math.min(2048, clip.bars * clip.beatsPerBar * clip.stepsPerBeat));
   const cellWidth = Math.round(28 * rollZoom);
   const rowHeight = Math.round(22 * rollZoom);
   const timelineHeight = Math.round(24 * rollZoom);
@@ -842,7 +848,36 @@ function MelodyEditor({
     }
     const nextTracks = clip.tracks.filter((track) => track.id !== activeTrack.id);
     updateClip({ ...clip, tracks: nextTracks });
+    setEditingTrackId(null);
     setActiveTrackIndex(Math.max(0, activeTrackIndex - 1));
+  }
+
+  function beginTrackNameEdit(track: MelodyClip["tracks"][number]) {
+    setEditingTrackId(track.id);
+    setEditingTrackName(track.name);
+  }
+
+  function commitTrackNameEdit() {
+    if (!editingTrackId) {
+      return;
+    }
+    const nextName = editingTrackName.trim();
+    updateTrack(editingTrackId, (track) => ({ ...track, name: nextName || track.name }));
+    setEditingTrackId(null);
+  }
+
+  function loadSelectedAudioExample() {
+    const example = audioExamples.find((candidate) => candidate.id === selectedAudioExampleId) ?? audioExamples[0];
+    if (!example) {
+      return;
+    }
+
+    stopCurrentPlayback();
+    onTitleChange(example.title);
+    updateClip(example.melody);
+    setActiveTrackIndex(0);
+    setEditingTrackId(null);
+    setPlayStartStep(0);
   }
 
   async function handleImportMidi() {
@@ -958,20 +993,64 @@ function MelodyEditor({
         <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} disabled={clip.tracks.length <= 1} onClick={removeActiveTrack} type="button">
           {ui.deleteTrack}
         </button>
+        <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={loadSelectedAudioExample} type="button">
+          {ui.audioExample}
+        </button>
+        <select
+          className={`h-9 max-w-64 rounded-md border ${theme.border} bg-white px-2 text-sm outline-none`}
+          onChange={(event) => setSelectedAudioExampleId(event.target.value)}
+          value={selectedAudioExampleId}
+        >
+          {audioExamples.map((example) => (
+            <option key={example.id} value={example.id}>
+              {example.title}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className={`flex flex-wrap gap-2 border-b ${theme.border} ${theme.panel} px-5 py-2`}>
-        {clip.tracks.map((track, index) => (
-          <button
-            className={`h-8 rounded-md border px-3 text-xs ${index === activeTrackIndex ? "bg-white" : theme.hover}`}
-            key={track.id}
-            onClick={() => setActiveTrackIndex(index)}
-            style={{ borderColor: track.color, color: track.color }}
-            type="button"
-          >
-            {track.name}
-          </button>
-        ))}
+        {clip.tracks.map((track, index) => {
+          const isActiveTrack = index === activeTrackIndex;
+          const isEditingTrack = editingTrackId === track.id;
+          return isEditingTrack ? (
+            <input
+              autoFocus
+              className="h-8 min-w-24 max-w-40 rounded-md border bg-white px-3 text-xs outline-none"
+              key={track.id}
+              onBlur={commitTrackNameEdit}
+              onChange={(event) => setEditingTrackName(event.target.value)}
+              onFocus={(event) => event.currentTarget.select()}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  commitTrackNameEdit();
+                } else if (event.key === "Escape") {
+                  setEditingTrackId(null);
+                }
+              }}
+              style={{ borderColor: track.color, color: track.color }}
+              value={editingTrackName}
+            />
+          ) : (
+            <button
+              className={`h-8 max-w-40 truncate rounded-md border px-3 text-xs ${isActiveTrack ? "bg-white" : theme.hover}`}
+              key={track.id}
+              onClick={() => {
+                if (isActiveTrack) {
+                  beginTrackNameEdit(track);
+                  return;
+                }
+                setEditingTrackId(null);
+                setActiveTrackIndex(index);
+              }}
+              style={{ borderColor: track.color, color: track.color }}
+              title={track.name}
+              type="button"
+            >
+              {track.name}
+            </button>
+          );
+        })}
         {activeTrack ? (
           <>
             <label className="ml-2 flex items-center gap-2 text-sm">
@@ -1148,18 +1227,19 @@ function MelodyVisualPlayer({
             const bottom = Math.max(top + 2, Math.min(100, startY));
             const height = bottom - top;
             const isActive = note.start <= playheadStep && note.start + note.duration > playheadStep;
+            const fillAlpha = visualNoteFillAlpha(note.duration, visibleSteps, isActive);
             return (
               <div
-                className={`absolute rounded-sm border transition-[top,height,opacity,filter] duration-150 ease-linear ${isActive ? "opacity-100 blur-0" : "opacity-80"}`}
+                className="absolute rounded-sm border transition-[top,height,background-color,border-color,box-shadow,filter] duration-150 ease-linear"
                 key={`${track.id}-${note.id}`}
                 style={{
                   left: `${left}%`,
                   top: `${top}%`,
                   width: `${100 / 88}%`,
                   height: `${height}%`,
-                  backgroundColor: hexWithAlpha(track.color, isActive ? 0.92 : 0.68),
+                  backgroundColor: hexWithAlpha(track.color, fillAlpha),
                   borderColor: track.color,
-                  boxShadow: isActive ? `0 0 18px ${track.color}` : undefined,
+                  boxShadow: isActive ? `0 0 0 1px ${track.color}, 0 0 18px ${track.color}` : undefined,
                   transform: "translateX(-50%)"
                 }}
               />
@@ -2028,6 +2108,12 @@ function visualKeyWidthPercent(): number {
   return 100 / (melodyMaxPitch - melodyMinPitch + 1);
 }
 
+function visualNoteFillAlpha(duration: number, visibleSteps: number, isActive: boolean): number {
+  const normalizedDuration = Math.max(0, duration) / Math.max(1, visibleSteps);
+  const alpha = 0.18 + 0.58 * Math.exp(-3.2 * normalizedDuration);
+  return clampNumber(isActive ? alpha + 0.1 : alpha, 0.16, 0.82);
+}
+
 function getImageCropRect(draft: ImageImportDraft, targetWidth: number, targetHeight: number) {
   const base = getBaseImageCropSize(draft, targetWidth, targetHeight);
   let width = base.width;
@@ -2137,3 +2223,4 @@ function hexWithAlpha(hex: string, alpha: number): string {
   }
   return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
 }
+

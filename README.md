@@ -11,8 +11,8 @@
 - 文本记录：独立标题、Markdown 编辑、实时预览和 Markdown 辅助提示。
 - 像素画布：透明背景、自定义尺寸、网格开关、存色区、随机填色、画笔、橡皮、直线、矩形、椭圆、喷枪和填充。
 - 图像处理：支持导入 `.jpg`、`.jpeg`、`.png`，导入时可拖动裁剪框；默认导出 JPG，也可导出保留透明背景的 PNG。
-- 旋律片段：钢琴卷帘编辑、1 到 5 条音轨、音轨颜色、采样音色、BPM、小节、音量、延音、试听、暂停/继续播放和可视化演奏。
-- 音频导入导出：支持 MIDI 导入，支持 MIDI 和 WAV 导出。
+- 旋律片段：钢琴卷帘编辑、1 到 5 条音轨、音轨命名、音轨颜色、采样音色、BPM、小节、音量、延音、试听、暂停/继续播放和可视化演奏。
+- 音频导入导出：支持 MIDI 导入，支持 MIDI 和 WAV 导出；内置 Bach、Brahms 和 Schumann 公版乐曲示例，便于测试复音、长音、圆舞曲节拍和快速音型。
 - 本地存储：每条灵感保存为 JSON 文件，存储目录可由用户选择。
 - 其他：全文搜索、自动保存、多主题、中英文界面和作者联系入口。
 
@@ -47,6 +47,8 @@ npm run tauri:build
 
 内置音源来自 `gleitz/midi-js-soundfonts` 的 FluidR3_GM 预渲染 MP3 采样子集。该来源项目标注 FluidR3_GM 使用 Creative Commons Attribution 3.0 许可。星忆只内置当前旋律编辑器需要的少量乐器和根音采样。
 
+内置音频示例使用公版古典乐曲或公版来源 MIDI 转换而来，作为功能测试数据随应用打包。
+
 ## English
 
 Mnemosyne is a local-first creative workspace for capturing, organizing, and reviewing personal ideas. It is designed for individual creators and follows the principle of capturing first, organizing later.
@@ -56,8 +58,8 @@ Mnemosyne is a local-first creative workspace for capturing, organizing, and rev
 - Text records: independent title, Markdown editing, live preview, and Markdown helper panel.
 - Pixel canvas: transparent background, custom size, grid toggle, color palette, random fill, pencil, eraser, line, rectangle, ellipse, spray, and fill.
 - Image handling: imports `.jpg`, `.jpeg`, and `.png` with a draggable crop box. JPG is the default export format, while PNG remains available for transparency.
-- Melody clips: piano-roll editing, 1 to 5 tracks, track colors, sampled instruments, BPM, bars, volume, sustain, preview, pause/resume playback, and visual performance.
-- Audio import/export: MIDI import, plus MIDI and WAV export.
+- Melody clips: piano-roll editing, 1 to 5 tracks, editable track names, track colors, sampled instruments, BPM, bars, volume, sustain, preview, pause/resume playback, and visual performance.
+- Audio import/export: MIDI import, plus MIDI and WAV export. Bundled Bach, Brahms, and Schumann public-domain examples help test polyphony, long notes, waltz meter, and fast patterns.
 - Local storage: each idea is saved as a JSON file, with a configurable storage folder.
 - Other: full-text search, autosave, themes, Chinese/English UI, and author contact entry.
 
@@ -91,3 +93,5 @@ Idea JSON files, database files, environment variables, local settings, portable
 ### Sound Source License
 
 Bundled sounds come from the FluidR3_GM pre-rendered MP3 subset in `gleitz/midi-js-soundfonts`. The source project notes FluidR3_GM as Creative Commons Attribution 3.0. Mnemosyne only bundles the small set of instruments and root-note samples used by the melody editor.
+
+Bundled audio examples are converted from public-domain classical works or public-domain-source MIDI files and are packaged as test data.
