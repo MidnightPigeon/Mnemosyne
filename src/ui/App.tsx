@@ -5,6 +5,7 @@ import {
   exportCanvasJpg,
   exportCanvasPng,
   exportMarkdown,
+  exportMarkdownPdf,
   exportMidiFile,
   exportWavFile,
   importImageFile,
@@ -145,6 +146,8 @@ const uiText = {
     showHelp: "显示提示",
     save: "保存",
     export: "导出",
+    exportMarkdown: "导出 MD",
+    exportPdf: "导出 PDF",
     exportJpg: "导出 JPG",
     exportPng: "导出 PNG",
     exportMidi: "导出 MIDI",
@@ -253,6 +256,8 @@ const uiText = {
     showHelp: "Show help",
     save: "Save",
     export: "Export",
+    exportMarkdown: "Export MD",
+    exportPdf: "Export PDF",
     exportJpg: "Export JPG",
     exportPng: "Export PNG",
     exportMidi: "Export MIDI",
@@ -483,6 +488,12 @@ export function App() {
     }
   }
 
+  async function handleExportPdf() {
+    if (selectedDraft?.kind === "markdown") {
+      await exportMarkdownPdf(draftTitle, draftBody.trim() ? `# ${draftTitle}\n\n${draftBody}` : `# ${draftTitle}\n`);
+    }
+  }
+
   async function handleExportWav() {
     if (!draftMelody) {
       return;
@@ -642,6 +653,15 @@ export function App() {
                 </button>
                 <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleExportPng()} type="button">
                   {ui.exportPng}
+                </button>
+              </>
+            ) : selectedDraft?.kind === "markdown" ? (
+              <>
+                <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleExport()} type="button">
+                  {ui.exportMarkdown}
+                </button>
+                <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleExportPdf()} type="button">
+                  {ui.exportPdf}
                 </button>
               </>
             ) : (

@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 use tauri::{AppHandle, Manager};
+use genpdf::{elements, style, Element as _};
 
 const SETTINGS_FILE: &str = "settings.json";
 const IDEAS_DIR: &str = "ideas";
@@ -212,6 +213,209 @@ fn export_markdown(title: String, body: String) -> Result<Option<String>, String
 }
 
 #[tauri::command]
+fn export_markdown_pdf(title: String, body: String) -> Result<Option<String>, String> {
+    let default_name = format!("{}.pdf", safe_file_stem(&title, "text-record"));
+    let Some(path) = rfd::FileDialog::new()
+        .set_title("另存为 PDF")
+        .set_file_name(&default_name)
+        .add_filter("PDF", &["pdf"])
+        .save_file()
+    else {
+        return Ok(None);
+    };
+
+    render_markdown_pdf(&title, &body, &path)?;
+    Ok(Some(path.to_string_lossy().to_string()))
+}
+
+fn render_markdown_pdf(title: &str, body: &str, path: &Path) -> Result<(), String> {
+    let font_family = load_pdf_font_family()?;
+    let mut doc = genpdf::Document::new(font_family);
+    doc.set_title(title);
+    doc.set_font_size(11);
+
+    let mut decorator = genpdf::SimplePageDecorator::new();
+    decorator.set_margins(14);
+    doc.set_page_decorator(decorator);
+
+    let title_style = style::Style::new().with_font_size(22).bold();
+    doc.push(elements::Paragraph::new(title.to_string()).styled(title_style));
+    doc.push(elements::Break::new(1));
+
+    let mut in_code_block = false;
+    for line in body.lines() {
+        let trimmed = line.trim();
+
+        if trimmed.starts_with("```") {
+            in_code_block = !in_code_block;
+            doc.push(elements::Break::new(1));
+            continue;
+        }
+
+        if in_code_block {
+            let code_style = style::Style::new()
+                .with_font_size(9)
+                .with_color(style::Color::Rgb(70, 77, 86));
+            doc.push(elements::Paragraph::new(format!("    {line}")).styled(code_style));
+            continue;
+        }
+
+        if trimmed.is_empty() {
+            doc.push(elements::Break::new(1));
+            continue;
+        }
+
+        if let Some((level, heading)) = markdown_heading(trimmed) {
+            let font_size = match level {
+                1 => 18,
+                2 => 15,
+                _ => 13,
+            };
+            doc.push(elements::Break::new(1));
+            doc.push(
+                elements::Paragraph::new(inline_markdown_to_text(heading))
+                    .styled(style::Style::new().with_font_size(font_size).bold()),
+            );
+            continue;
+        }
+
+        if let Some(item) = markdown_unordered_item(trimmed) {
+            doc.push(elements::Paragraph::new(format!("• {}", inline_markdown_to_text(item))));
+            continue;
+        }
+
+        if let Some(item) = markdown_ordered_item(trimmed) {
+            doc.push(elements::Paragraph::new(format!("{}. {}", item.0, inline_markdown_to_text(item.1))));
+            continue;
+        }
+
+        if let Some(quote) = trimmed.strip_prefix('>') {
+            let quote_style = style::Style::new()
+                .italic()
+                .with_color(style::Color::Rgb(83, 98, 112));
+            doc.push(elements::Paragraph::new(format!("“{}”", inline_markdown_to_text(quote.trim()))).styled(quote_style));
+            continue;
+        }
+
+        doc.push(elements::Paragraph::new(inline_markdown_to_text(trimmed)));
+    }
+
+    doc.render_to_file(path).map_err(|error| error.to_string())
+}
+
+fn load_pdf_font_family() -> Result<genpdf::fonts::FontFamily<genpdf::fonts::FontData>, String> {
+    let windows_fonts = Path::new("C:\\Windows\\Fonts");
+    let candidates = [
+        (
+            windows_fonts.join("Deng.ttf"),
+            windows_fonts.join("Dengb.ttf"),
+            windows_fonts.join("Deng.ttf"),
+            windows_fonts.join("Dengb.ttf"),
+        ),
+        (
+            windows_fonts.join("NotoSansSC-VF.ttf"),
+            windows_fonts.join("NotoSansSC-VF.ttf"),
+            windows_fonts.join("NotoSansSC-VF.ttf"),
+            windows_fonts.join("NotoSansSC-VF.ttf"),
+        ),
+        (
+            windows_fonts.join("simkai.ttf"),
+            windows_fonts.join("simsunb.ttf"),
+            windows_fonts.join("simkai.ttf"),
+            windows_fonts.join("simsunb.ttf"),
+        ),
+        (
+            windows_fonts.join("arial.ttf"),
+            windows_fonts.join("arialbd.ttf"),
+            windows_fonts.join("ariali.ttf"),
+            windows_fonts.join("arialbi.ttf"),
+        ),
+    ];
+
+    for (regular, bold, italic, bold_italic) in candidates {
+        if regular.exists() && bold.exists() && italic.exists() && bold_italic.exists() {
+            return Ok(genpdf::fonts::FontFamily {
+                regular: genpdf::fonts::FontData::load(regular, None).map_err(|error| error.to_string())?,
+                bold: genpdf::fonts::FontData::load(bold, None).map_err(|error| error.to_string())?,
+                italic: genpdf::fonts::FontData::load(italic, None).map_err(|error| error.to_string())?,
+                bold_italic: genpdf::fonts::FontData::load(bold_italic, None).map_err(|error| error.to_string())?,
+            });
+        }
+    }
+
+    Err("No suitable system font was found for PDF export.".to_string())
+}
+
+fn markdown_heading(line: &str) -> Option<(usize, &str)> {
+    let hashes = line.chars().take_while(|character| *character == '#').count();
+    if hashes == 0 || hashes > 6 {
+        return None;
+    }
+    let rest = line.get(hashes..)?.trim_start();
+    if rest.is_empty() {
+        None
+    } else {
+        Some((hashes, rest))
+    }
+}
+
+fn markdown_unordered_item(line: &str) -> Option<&str> {
+    line.strip_prefix("- ")
+        .or_else(|| line.strip_prefix("* "))
+        .or_else(|| line.strip_prefix("+ "))
+}
+
+fn markdown_ordered_item(line: &str) -> Option<(usize, &str)> {
+    let dot = line.find(". ")?;
+    let number = line[..dot].parse::<usize>().ok()?;
+    Some((number, &line[dot + 2..]))
+}
+
+fn inline_markdown_to_text(input: &str) -> String {
+    let mut text = replace_markdown_links(input);
+    for marker in ["**", "__", "`", "*", "_", "~~"] {
+        text = text.replace(marker, "");
+    }
+    text
+}
+
+fn replace_markdown_links(input: &str) -> String {
+    let mut output = String::new();
+    let mut rest = input;
+
+    while let Some(start) = rest.find('[') {
+        output.push_str(&rest[..start]);
+        let after_start = &rest[start + 1..];
+        let Some(label_end) = after_start.find(']') else {
+            output.push_str(&rest[start..]);
+            return output;
+        };
+        let after_label = &after_start[label_end + 1..];
+        if !after_label.starts_with('(') {
+            output.push('[');
+            rest = after_start;
+            continue;
+        }
+        let Some(url_end) = after_label[1..].find(')') else {
+            output.push_str(&rest[start..]);
+            return output;
+        };
+        let label = &after_start[..label_end];
+        let url = &after_label[1..1 + url_end];
+        output.push_str(label);
+        if !url.trim().is_empty() {
+            output.push_str(" (");
+            output.push_str(url.trim());
+            output.push(')');
+        }
+        rest = &after_label[2 + url_end..];
+    }
+
+    output.push_str(rest);
+    output
+}
+
+#[tauri::command]
 fn export_canvas_png(title: String, canvas: PixelCanvas) -> Result<Option<String>, String> {
     let default_name = format!("{}.png", safe_file_stem(&title, "pixel-canvas"));
     let Some(path) = rfd::FileDialog::new()
@@ -334,6 +538,7 @@ pub fn run() {
             save_idea,
             delete_idea,
             export_markdown,
+            export_markdown_pdf,
             export_canvas_png,
             export_canvas_jpg,
             import_midi_file,

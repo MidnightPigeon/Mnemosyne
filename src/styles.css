@@ -85,6 +85,16 @@ textarea {
   font-weight: 700;
 }
 
+.markdown-preview a {
+  color: #1d5f92;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.markdown-preview a:hover {
+  color: #17496f;
+}
+
 .markdown-preview code {
   background: #20251f !important;
   border-radius: 4px;

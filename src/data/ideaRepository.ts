@@ -32,6 +32,10 @@ export async function exportMarkdown(title: string, body: string): Promise<strin
   return invoke<string | null>("export_markdown", { title, body });
 }
 
+export async function exportMarkdownPdf(title: string, body: string): Promise<string | null> {
+  return invoke<string | null>("export_markdown_pdf", { title, body });
+}
+
 export async function exportCanvasPng(title: string, canvas: PixelCanvas): Promise<string | null> {
   return invoke<string | null>("export_canvas_png", { title, canvas });
 }
