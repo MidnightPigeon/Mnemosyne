@@ -8,13 +8,13 @@
 
 ### 当前功能
 
-- 文本记录：独立标题、Markdown 编辑、实时预览、Markdown 辅助提示，以及 MD/PDF 导出。
+- 文本记录：独立标题、Markdown/LaTeX 编辑、实时预览、可点击辅助提示，以及 MD/PDF 导出。
 - 像素画布：透明背景、自定义尺寸、网格开关、存色区、随机填色、画笔、橡皮、直线、矩形、椭圆、喷枪和填充。
 - 图像处理：支持导入 `.jpg`、`.jpeg`、`.png`，导入时可拖动裁剪框；默认导出 JPG，也可导出保留透明背景的 PNG。
-- 旋律片段：钢琴卷帘编辑、1 到 5 条音轨、音轨命名、固定长度或自由长度音符编辑、采样音色、播放和可视化演奏。
+- 旋律片段：钢琴卷帘编辑、1 到 5 条音轨、音轨命名、固定长度或自由长度音符编辑、采样音色、播放和流畅可视化演奏。
 - 音频导入导出：支持 MIDI 导入，支持 MIDI 和 WAV 导出；内置 Bach、Brahms 和 Schumann 公版乐曲示例，便于测试复音、长音、圆舞曲节拍和快速音型。
 - 本地存储：每条灵感保存为 JSON 文件，存储目录可由用户选择。
-- 其他：全文搜索、自动保存、多主题、中英文界面和作者联系入口。
+- 其他：全文搜索、自动保存、条目右键菜单、多主题、中英文界面和作者联系入口。
 
 ### 开发
 
@@ -55,13 +55,13 @@ Mnemosyne is a local-first creative workspace for capturing, organizing, and rev
 
 ### Features
 
-- Text records: independent title, Markdown editing, live preview, Markdown helper panel, and MD/PDF export.
+- Text records: independent title, Markdown/LaTeX editing, live preview, clickable helper panel, and MD/PDF export.
 - Pixel canvas: transparent background, custom size, grid toggle, color palette, random fill, pencil, eraser, line, rectangle, ellipse, spray, and fill.
 - Image handling: imports `.jpg`, `.jpeg`, and `.png` with a draggable crop box. JPG is the default export format, while PNG remains available for transparency.
-- Melody clips: piano-roll editing, 1 to 5 tracks, editable track names, fixed-length or free-length note editing, sampled instruments, playback, and visual performance.
+- Melody clips: piano-roll editing, 1 to 5 tracks, editable track names, fixed-length or free-length note editing, sampled instruments, playback, and smooth visual performance.
 - Audio import/export: MIDI import, plus MIDI and WAV export. Bundled Bach, Brahms, and Schumann public-domain examples help test polyphony, long notes, waltz meter, and fast patterns.
 - Local storage: each idea is saved as a JSON file, with a configurable storage folder.
-- Other: full-text search, autosave, themes, Chinese/English UI, and author contact entry.
+- Other: full-text search, autosave, item context menu, themes, Chinese/English UI, and author contact entry.
 
 ### Development
 

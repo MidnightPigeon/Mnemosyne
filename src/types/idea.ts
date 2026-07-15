@@ -1,4 +1,5 @@
 export type IdeaKind = "markdown" | "pixel" | "melody";
+export type TextFormat = "markdown" | "latex";
 
 export type PixelCanvas = {
   width: number;
@@ -36,6 +37,7 @@ export type MelodyClip = {
 export type Idea = {
   id: string;
   kind: IdeaKind;
+  textFormat?: TextFormat;
   title: string;
   body: string;
   canvas?: PixelCanvas;
@@ -47,6 +49,7 @@ export type Idea = {
 export type IdeaInput = {
   id: string;
   kind: IdeaKind;
+  textFormat?: TextFormat;
   title: string;
   body: string;
   canvas?: PixelCanvas;

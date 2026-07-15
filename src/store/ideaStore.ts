@@ -7,7 +7,7 @@ import {
   upsertIdea
 } from "../data/ideaRepository";
 import { createDefaultMelody } from "../lib/midi";
-import type { Idea, IdeaKind, MelodyClip, PixelCanvas, StorageSettings } from "../types/idea";
+import type { Idea, IdeaKind, MelodyClip, PixelCanvas, StorageSettings, TextFormat } from "../types/idea";
 
 type CreateIdeaOptions =
   | { kind: "markdown" }
@@ -20,6 +20,7 @@ type IdeaState = {
   selectedIdeaId?: string;
   draftTitle: string;
   draftBody: string;
+  draftTextFormat: TextFormat;
   draftCanvas?: PixelCanvas;
   draftMelody?: MelodyClip;
   query: string;
@@ -34,10 +35,12 @@ type IdeaState = {
   selectIdea: (id: string) => Promise<void>;
   setDraftTitle: (title: string) => void;
   setDraftBody: (body: string) => void;
+  setDraftTextFormat: (format: TextFormat) => void;
   setDraftCanvas: (canvas: PixelCanvas) => void;
   setDraftMelody: (melody: MelodyClip) => void;
   saveSelectedIdea: () => Promise<void>;
   setQuery: (query: string) => void;
+  removeIdea: (id: string) => Promise<void>;
   removeSelectedIdea: () => Promise<void>;
   chooseStorageFolder: () => Promise<void>;
 };
@@ -49,6 +52,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
   ideas: [],
   draftTitle: "新文本记录",
   draftBody: initialMarkdown,
+  draftTextFormat: "markdown",
   query: "",
   isLoading: true,
   isSaving: false,
@@ -68,6 +72,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
         selectedIdeaId: selected?.id,
         draftTitle: selected?.title ?? "新文本记录",
         draftBody: selected?.body ?? initialMarkdown,
+        draftTextFormat: selected?.textFormat ?? "markdown",
         draftCanvas: selected?.canvas,
         draftMelody: selected?.melody,
         lastSavedAt: selected?.updatedAt,
@@ -94,6 +99,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
     const idea: Idea = {
       id: crypto.randomUUID(),
       kind: options.kind,
+      textFormat: options.kind === "markdown" ? "markdown" : undefined,
       title: defaultTitle(options.kind),
       body: options.kind === "markdown" ? initialMarkdown : "",
       canvas,
@@ -106,6 +112,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
       selectedIdeaId: idea.id,
       draftTitle: idea.title,
       draftBody: idea.body,
+      draftTextFormat: idea.textFormat ?? "markdown",
       draftCanvas: idea.canvas,
       draftMelody: idea.melody,
       lastSavedAt: undefined,
@@ -130,6 +137,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
       selectedIdeaId: id,
       draftTitle: selected.title,
       draftBody: selected.body,
+      draftTextFormat: selected.textFormat ?? "markdown",
       draftCanvas: selected.canvas,
       draftMelody: selected.melody,
       lastSavedAt: selected.updatedAt,
@@ -142,6 +150,9 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
   setDraftBody(body) {
     set({ draftBody: body, isDirty: true });
   },
+  setDraftTextFormat(format) {
+    set({ draftTextFormat: format, isDirty: true });
+  },
   setDraftCanvas(canvas) {
     set({ draftCanvas: canvas, isDirty: true });
   },
@@ -149,7 +160,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
     set({ draftMelody: melody, isDirty: true });
   },
   async saveSelectedIdea() {
-    const { selectedIdeaId, draftTitle, draftBody, draftCanvas, draftMelody, allIdeas, isDirty } = get();
+    const { selectedIdeaId, draftTitle, draftBody, draftTextFormat, draftCanvas, draftMelody, allIdeas, isDirty } = get();
     if (!selectedIdeaId || !isDirty) {
       return;
     }
@@ -163,6 +174,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
       const saved = await upsertIdea({
         id: selectedIdeaId,
         kind,
+        textFormat: kind === "markdown" ? draftTextFormat : undefined,
         title: draftTitle.trim() || defaultTitle(kind),
         body: draftBody,
         canvas: kind === "pixel" ? draftCanvas : undefined,
@@ -177,6 +189,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
         selectedIdeaId: saved.id,
         draftTitle: saved.title,
         draftBody: saved.body,
+        draftTextFormat: saved.textFormat ?? "markdown",
         draftCanvas: saved.canvas,
         draftMelody: saved.melody,
         isSaving: false,
@@ -196,6 +209,41 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
       ideas: filterIdeas(state.allIdeas, query)
     }));
   },
+  async removeIdea(id) {
+    try {
+      await deleteIdea(id);
+      const allIdeas = get().allIdeas.filter((idea) => idea.id !== id);
+      if (id !== get().selectedIdeaId) {
+        set((state) => ({
+          allIdeas,
+          ideas: filterIdeas(allIdeas, state.query)
+        }));
+        return;
+      }
+
+      const selected = allIdeas[0];
+      set((state) => ({
+        allIdeas,
+        ideas: filterIdeas(allIdeas, state.query),
+        selectedIdeaId: selected?.id,
+        draftTitle: selected?.title ?? "新文本记录",
+        draftBody: selected?.body ?? initialMarkdown,
+        draftTextFormat: selected?.textFormat ?? "markdown",
+        draftCanvas: selected?.canvas,
+        draftMelody: selected?.melody,
+        lastSavedAt: selected?.updatedAt,
+        isDirty: false
+      }));
+
+      if (!selected) {
+        await get().createIdea({ kind: "markdown" });
+      }
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : "删除失败。"
+      });
+    }
+  },
   async removeSelectedIdea() {
     const selectedIdeaId = get().selectedIdeaId;
     if (!selectedIdeaId) {
@@ -213,6 +261,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
         selectedIdeaId: selected?.id,
         draftTitle: selected?.title ?? "新文本记录",
         draftBody: selected?.body ?? initialMarkdown,
+        draftTextFormat: selected?.textFormat ?? "markdown",
         draftCanvas: selected?.canvas,
         draftMelody: selected?.melody,
         lastSavedAt: selected?.updatedAt,

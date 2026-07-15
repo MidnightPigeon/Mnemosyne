@@ -81,7 +81,7 @@ export function normalizeMelodyClip(clip?: Partial<MelodyClip>): MelodyClip {
     beatsPerBar,
     beats: bars * beatsPerBar,
     stepsPerBeat: clamp(Math.round(clip?.stepsPerBeat ?? defaultStepsPerBeat), 1, 16),
-    sustain: clip?.sustain ?? true,
+    sustain: true,
     tracks
   };
 }

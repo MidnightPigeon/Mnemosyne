@@ -1,4 +1,4 @@
-import { type PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { audioExamples } from "../data/audioExamples";
 import {
@@ -6,6 +6,7 @@ import {
   exportCanvasPng,
   exportMarkdown,
   exportMarkdownPdf,
+  exportLatexPdf,
   exportMidiFile,
   exportWavFile,
   importImageFile,
@@ -23,6 +24,7 @@ import {
   writeMidi,
   type PlaybackControls
 } from "../lib/midi";
+import { renderLatexPreview } from "../lib/latex";
 import {
   cropCanvasBounds,
   drawEllipse,
@@ -42,7 +44,7 @@ import {
 import { getIdeaExcerpt, getIdeaTitle } from "../lib/summary";
 import { formatTimelineTime, relativeSaveState } from "../lib/time";
 import { useIdeaStore } from "../store/ideaStore";
-import type { Idea, IdeaKind, MelodyClip, MelodyNote, PixelCanvas } from "../types/idea";
+import type { Idea, IdeaKind, MelodyClip, MelodyNote, PixelCanvas, TextFormat } from "../types/idea";
 
 const themes = {
   sky: {
@@ -142,6 +144,9 @@ const uiText = {
     authorAvatar: "作者头像",
     preparingStorage: "正在准备存储目录",
     noSelection: "未选择灵感",
+    hideSidebar: "收起工作栏",
+    showSidebar: "展开工作栏",
+    open: "打开",
     saving: "保存中...",
     collapseHelp: "收起提示",
     showHelp: "显示提示",
@@ -153,17 +158,21 @@ const uiText = {
     exportPng: "导出 PNG",
     exportMidi: "导出 MIDI",
     exportWav: "导出 WAV",
+    exportLatexPdf: "导出 LaTeX PDF",
     delete: "删除",
     deleteConfirm: "确定删除当前灵感吗？这个操作会删除对应的本地 JSON 文件。",
     textTitle: "文本记录名称",
     textPlaceholder: "在这里记录正文。标题已经独立保存，不需要写在第一行。",
+    textFormat: "文本格式",
+    markdownFormat: "Markdown",
+    latexFormat: "LaTeX",
     markdownHelp: "Markdown 辅助",
+    latexHelp: "LaTeX 辅助",
     melodyTitle: "旋律片段名称",
     bars: "小节",
     beatsPerBar: "每小节拍",
     noteLength: "音符长度",
     freeEdit: "自由编辑",
-    sustain: "延音",
     stop: "停止",
     pause: "暂停",
     resume: "继续",
@@ -233,6 +242,18 @@ const uiText = {
       ["`代码`", "行内代码"],
       ["```", "代码块"],
       ["[文字](链接)", "链接"]
+    ],
+    latexTips: [
+      ["\\section{标题}", "一级章节"],
+      ["\\subsection{小节}", "二级章节"],
+      ["\\textbf{加粗}", "加粗文本"],
+      ["\\emph{斜体}", "强调文本"],
+      ["\\begin{itemize}", "无序列表"],
+      ["\\begin{enumerate}", "有序列表"],
+      ["\\begin{quote}", "引用块"],
+      ["\\begin{verbatim}", "代码块"],
+      ["$a^2 + b^2 = c^2$", "行内公式"],
+      ["\\[ x = \\frac{-b}{2a} \\]", "展示公式"]
     ]
   },
   en: {
@@ -253,6 +274,9 @@ const uiText = {
     authorAvatar: "Author avatar",
     preparingStorage: "Preparing storage folder",
     noSelection: "No idea selected",
+    hideSidebar: "Collapse sidebar",
+    showSidebar: "Expand sidebar",
+    open: "Open",
     saving: "Saving...",
     collapseHelp: "Hide help",
     showHelp: "Show help",
@@ -264,17 +288,21 @@ const uiText = {
     exportPng: "Export PNG",
     exportMidi: "Export MIDI",
     exportWav: "Export WAV",
+    exportLatexPdf: "Export LaTeX PDF",
     delete: "Delete",
     deleteConfirm: "Delete this idea? This will remove its local JSON file.",
     textTitle: "Text record name",
     textPlaceholder: "Write here. The title is saved separately, so it does not need to be the first line.",
+    textFormat: "Text format",
+    markdownFormat: "Markdown",
+    latexFormat: "LaTeX",
     markdownHelp: "Markdown Help",
+    latexHelp: "LaTeX Help",
     melodyTitle: "Melody clip name",
     bars: "Bars",
     beatsPerBar: "Beats/bar",
     noteLength: "Note length",
     freeEdit: "Free edit",
-    sustain: "Sustain",
     stop: "Stop",
     pause: "Pause",
     resume: "Resume",
@@ -344,6 +372,18 @@ const uiText = {
       ["`code`", "Inline code"],
       ["```", "Code block"],
       ["[Text](URL)", "Link"]
+    ],
+    latexTips: [
+      ["\\section{Heading}", "Level 1 section"],
+      ["\\subsection{Subheading}", "Level 2 section"],
+      ["\\textbf{Bold}", "Bold text"],
+      ["\\emph{Italic}", "Emphasis"],
+      ["\\begin{itemize}", "Unordered list"],
+      ["\\begin{enumerate}", "Ordered list"],
+      ["\\begin{quote}", "Quote block"],
+      ["\\begin{verbatim}", "Code block"],
+      ["$a^2 + b^2 = c^2$", "Inline math"],
+      ["\\[ x = \\frac{-b}{2a} \\]", "Display math"]
     ]
   }
 } as const;
@@ -372,6 +412,7 @@ export function App() {
     selectedIdeaId,
     draftTitle,
     draftBody,
+    draftTextFormat,
     draftCanvas,
     draftMelody,
     query,
@@ -386,10 +427,12 @@ export function App() {
     selectIdea,
     setDraftTitle,
     setDraftBody,
+    setDraftTextFormat,
     setDraftCanvas,
     setDraftMelody,
     saveSelectedIdea,
     setQuery,
+    removeIdea,
     removeSelectedIdea,
     chooseStorageFolder
   } = useIdeaStore();
@@ -401,6 +444,8 @@ export function App() {
   const [canvasWidth, setCanvasWidth] = useState(24);
   const [canvasHeight, setCanvasHeight] = useState(24);
   const [showMarkdownHelp, setShowMarkdownHelp] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem("mnemosyne-sidebar-collapsed") === "true");
+  const [ideaMenu, setIdeaMenu] = useState<{ ideaId: string; x: number; y: number } | null>(null);
   const [language, setLanguage] = useState<LanguageKey>(() => {
     return (localStorage.getItem("mnemosyne-language") as LanguageKey | null) ?? "zh";
   });
@@ -409,9 +454,11 @@ export function App() {
   const ui = uiText[language];
   const selectedIdea = allIdeas.find((idea) => idea.id === selectedIdeaId);
   const selectedDraft: Idea | undefined = selectedIdea
-    ? { ...selectedIdea, title: draftTitle, body: draftBody, canvas: draftCanvas, melody: draftMelody }
+    ? { ...selectedIdea, title: draftTitle, body: draftBody, textFormat: draftTextFormat, canvas: draftCanvas, melody: draftMelody }
     : undefined;
-  const preview = useMemo(() => renderMarkdown(draftBody), [draftBody]);
+  const contextIdea = ideaMenu ? allIdeas.find((idea) => idea.id === ideaMenu.ideaId) : undefined;
+  const contextDraft = contextIdea && selectedDraft?.id === contextIdea.id ? selectedDraft : contextIdea;
+  const preview = useMemo(() => (draftTextFormat === "markdown" ? renderMarkdown(draftBody) : renderLatexPreview(draftBody)), [draftBody, draftTextFormat]);
 
   useEffect(() => {
     void bootstrap();
@@ -426,6 +473,10 @@ export function App() {
   }, [language]);
 
   useEffect(() => {
+    localStorage.setItem("mnemosyne-sidebar-collapsed", String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
+
+  useEffect(() => {
     const handle = window.setInterval(() => void saveSelectedIdea(), 5 * 60 * 1000);
     return () => window.clearInterval(handle);
   }, [saveSelectedIdea]);
@@ -436,7 +487,7 @@ export function App() {
     }
     const handle = window.setTimeout(() => void saveSelectedIdea(), 1500);
     return () => window.clearTimeout(handle);
-  }, [isDirty, draftTitle, draftBody, draftCanvas, draftMelody, saveSelectedIdea]);
+  }, [isDirty, draftTitle, draftBody, draftTextFormat, draftCanvas, draftMelody, saveSelectedIdea]);
 
   useEffect(() => {
     const flush = () => void saveSelectedIdea();
@@ -447,6 +498,26 @@ export function App() {
       document.removeEventListener("visibilitychange", flush);
     };
   }, [saveSelectedIdea]);
+
+  useEffect(() => {
+    if (!ideaMenu) {
+      return;
+    }
+    const closeMenu = () => setIdeaMenu(null);
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeMenu();
+      }
+    };
+    window.addEventListener("click", closeMenu);
+    window.addEventListener("scroll", closeMenu, true);
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      window.removeEventListener("click", closeMenu);
+      window.removeEventListener("scroll", closeMenu, true);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [ideaMenu]);
 
   async function handleCreateIdea() {
     await createIdea(
@@ -464,12 +535,71 @@ export function App() {
     }
   }
 
+  function handleIdeaContextMenu(event: ReactMouseEvent, idea: Idea) {
+    event.preventDefault();
+    setIdeaMenu({
+      ideaId: idea.id,
+      x: Math.min(event.clientX, window.innerWidth - 220),
+      y: Math.min(event.clientY, window.innerHeight - 260)
+    });
+  }
+
+  async function openContextIdea(idea: Idea) {
+    setIdeaMenu(null);
+    await selectIdea(idea.id);
+  }
+
+  async function deleteContextIdea(idea: Idea) {
+    setIdeaMenu(null);
+    if (window.confirm(ui.deleteConfirm)) {
+      await removeIdea(idea.id);
+    }
+  }
+
+  function resolveExportIdea(idea: Idea): Idea {
+    return selectedDraft && selectedDraft.id === idea.id ? selectedDraft : idea;
+  }
+
+  async function exportIdeaAs(idea: Idea, format: "md" | "pdf" | "jpg" | "png" | "midi" | "wav") {
+    setIdeaMenu(null);
+    const target = resolveExportIdea(idea);
+    const title = getIdeaTitle(target, language);
+
+    if (target.kind === "markdown") {
+      if (format === "md" && (target.textFormat ?? "markdown") === "markdown") {
+        await exportMarkdown(title, target.body.trim() ? `# ${title}\n\n${target.body}` : `# ${title}\n`);
+      } else if (format === "pdf" && (target.textFormat ?? "markdown") === "latex") {
+        await exportLatexPdf(title, target.body);
+      } else if (format === "pdf") {
+        await exportMarkdownPdf(title, target.body.trim() ? `# ${title}\n\n${target.body}` : `# ${title}\n`);
+      }
+      return;
+    }
+
+    if (target.kind === "pixel" && target.canvas) {
+      if (format === "png") {
+        await exportCanvasPng(title, target.canvas);
+      } else if (format === "jpg") {
+        await exportCanvasJpg(title, target.canvas);
+      }
+      return;
+    }
+
+    if (target.kind === "melody" && target.melody) {
+      if (format === "midi") {
+        await exportMidiFile(title, writeMidi(target.melody));
+      } else if (format === "wav") {
+        await exportWavFile(title, await renderMelodyWav(target.melody));
+      }
+    }
+  }
+
   async function handleExport() {
     if (!selectedDraft) {
       return;
     }
 
-    if (selectedDraft.kind === "markdown") {
+    if (selectedDraft.kind === "markdown" && draftTextFormat === "markdown") {
       await exportMarkdown(draftTitle, draftBody.trim() ? `# ${draftTitle}\n\n${draftBody}` : `# ${draftTitle}\n`);
       return;
     }
@@ -493,6 +623,10 @@ export function App() {
 
   async function handleExportPdf() {
     if (selectedDraft?.kind === "markdown") {
+      if (draftTextFormat === "latex") {
+        await exportLatexPdf(draftTitle, draftBody);
+        return;
+      }
       await exportMarkdownPdf(draftTitle, draftBody.trim() ? `# ${draftTitle}\n\n${draftBody}` : `# ${draftTitle}\n`);
     }
   }
@@ -506,13 +640,62 @@ export function App() {
 
   return (
     <main className={`flex h-screen w-screen overflow-hidden ${theme.app} text-[#17212b]`}>
-      <aside className={`flex w-[360px] shrink-0 flex-col border-r ${theme.border} ${theme.side}`}>
+      <aside className={`flex shrink-0 flex-col border-r ${theme.border} ${theme.side} ${sidebarCollapsed ? "w-14" : "w-[360px]"}`}>
+        {sidebarCollapsed ? (
+          <div className="flex h-full flex-col items-center gap-3 px-2 py-3">
+            <button
+              aria-label={ui.showSidebar}
+              className={`h-9 w-9 rounded-md border ${theme.border} ${theme.panel} text-sm ${theme.hover}`}
+              onClick={() => setSidebarCollapsed(false)}
+              title={ui.showSidebar}
+              type="button"
+            >
+              ≡
+            </button>
+            <button
+              aria-label={ui.new}
+              className={`h-9 w-9 rounded-md text-sm font-medium ${theme.primary}`}
+              onClick={handleCreateIdea}
+              title={ui.new}
+              type="button"
+            >
+              +
+            </button>
+            <div className={`mt-1 h-px w-8 ${theme.border} border-t`} />
+            <div className="flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto">
+              {ideas.map((idea) => {
+                const isSelected = idea.id === selectedIdeaId;
+                return (
+                  <button
+                    className={`h-8 w-8 rounded-md border text-xs font-semibold ${isSelected ? theme.selected : `border-transparent ${theme.hover}`}`}
+                    key={idea.id}
+                    onClick={() => void selectIdea(idea.id)}
+                    onContextMenu={(event) => handleIdeaContextMenu(event, idea)}
+                    title={getIdeaTitle(idea, language)}
+                    type="button"
+                  >
+                    {idea.kind === "pixel" ? "□" : idea.kind === "melody" ? "♪" : "T"}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <>
         <div className={`border-b ${theme.border} px-5 py-4`}>
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <h1 className="text-xl font-semibold leading-none">{ui.appName}</h1>
               <p className={`mt-2 truncate text-sm ${theme.muted}`}>{ui.appTagline}</p>
             </div>
+            <button
+              className={`h-9 rounded-md border ${theme.border} px-2 text-sm ${theme.hover}`}
+              onClick={() => setSidebarCollapsed(true)}
+              title={ui.hideSidebar}
+              type="button"
+            >
+              ‹
+            </button>
             <label className="flex items-center gap-2 text-xs">
               {ui.language}
               <select
@@ -585,6 +768,7 @@ export function App() {
                         isSelected ? theme.selected : `border-transparent ${theme.hover}`
                       }`}
                       onClick={() => void selectIdea(idea.id)}
+                      onContextMenu={(event) => handleIdeaContextMenu(event, idea)}
                       type="button"
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -623,7 +807,55 @@ export function App() {
             {storage?.ideasDir ?? ui.preparingStorage}
           </p>
         </div>
+          </>
+        )}
       </aside>
+
+      {ideaMenu && contextDraft ? (
+        <div
+          className={`fixed z-[100] w-52 overflow-hidden rounded-md border ${theme.border} ${theme.panel} py-1 text-sm shadow-xl`}
+          onClick={(event) => event.stopPropagation()}
+          style={{ left: ideaMenu.x, top: ideaMenu.y }}
+        >
+          <button className={`block w-full px-3 py-2 text-left ${theme.hover}`} onClick={() => void openContextIdea(contextDraft)} type="button">
+            {ui.open}
+          </button>
+          {contextDraft.kind === "markdown" ? (
+            <>
+              {(contextDraft.textFormat ?? "markdown") === "markdown" ? (
+                <button className={`block w-full px-3 py-2 text-left ${theme.hover}`} onClick={() => void exportIdeaAs(contextDraft, "md")} type="button">
+                  {ui.exportMarkdown}
+                </button>
+              ) : null}
+              <button className={`block w-full px-3 py-2 text-left ${theme.hover}`} onClick={() => void exportIdeaAs(contextDraft, "pdf")} type="button">
+                {(contextDraft.textFormat ?? "markdown") === "latex" ? ui.exportLatexPdf : ui.exportPdf}
+              </button>
+            </>
+          ) : contextDraft.kind === "pixel" ? (
+            <>
+              <button className={`block w-full px-3 py-2 text-left ${theme.hover}`} onClick={() => void exportIdeaAs(contextDraft, "jpg")} type="button">
+                {ui.exportJpg}
+              </button>
+              <button className={`block w-full px-3 py-2 text-left ${theme.hover}`} onClick={() => void exportIdeaAs(contextDraft, "png")} type="button">
+                {ui.exportPng}
+              </button>
+            </>
+          ) : contextDraft.kind === "melody" ? (
+            <>
+              <button className={`block w-full px-3 py-2 text-left ${theme.hover}`} onClick={() => void exportIdeaAs(contextDraft, "midi")} type="button">
+                {ui.exportMidi}
+              </button>
+              <button className={`block w-full px-3 py-2 text-left ${theme.hover}`} onClick={() => void exportIdeaAs(contextDraft, "wav")} type="button">
+                {ui.exportWav}
+              </button>
+            </>
+          ) : null}
+          <div className={`my-1 border-t ${theme.border}`} />
+          <button className="block w-full px-3 py-2 text-left text-[#9c3d2c] hover:bg-[#fff1ec]" onClick={() => void deleteContextIdea(contextDraft)} type="button">
+            {ui.delete}
+          </button>
+        </div>
+      ) : null}
 
       <section className="flex min-w-0 flex-1 flex-col">
         <header className={`flex h-14 shrink-0 items-center justify-between border-b ${theme.border} ${theme.panel} px-5`}>
@@ -660,9 +892,11 @@ export function App() {
               </>
             ) : selectedDraft?.kind === "markdown" ? (
               <>
-                <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleExport()} type="button">
-                  {ui.exportMarkdown}
-                </button>
+                {draftTextFormat === "markdown" ? (
+                  <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleExport()} type="button">
+                    {ui.exportMarkdown}
+                  </button>
+                ) : null}
                 <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleExportPdf()} type="button">
                   {ui.exportPdf}
                 </button>
@@ -687,7 +921,9 @@ export function App() {
         ) : (
           <TextEditor
             body={draftBody}
+            format={draftTextFormat}
             onBodyChange={setDraftBody}
+            onFormatChange={setDraftTextFormat}
             onTitleChange={setDraftTitle}
             preview={preview}
             showHelp={showMarkdownHelp}
@@ -703,7 +939,9 @@ export function App() {
 
 function TextEditor({
   body,
+  format,
   onBodyChange,
+  onFormatChange,
   onTitleChange,
   preview,
   showHelp,
@@ -712,7 +950,9 @@ function TextEditor({
   ui
 }: {
   body: string;
+  format: TextFormat;
   onBodyChange: (body: string) => void;
+  onFormatChange: (format: TextFormat) => void;
   onTitleChange: (title: string) => void;
   preview: string;
   showHelp: boolean;
@@ -723,6 +963,26 @@ function TextEditor({
   const gridColumns = showHelp
     ? "minmax(260px, 1fr) minmax(260px, 1fr) minmax(220px, 260px)"
     : "minmax(260px, 1fr) minmax(260px, 1fr)";
+  const helpTitle = format === "latex" ? ui.latexHelp : ui.markdownHelp;
+  const helpTips = format === "latex" ? ui.latexTips : ui.markdownTips;
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  function insertHelpSyntax(syntax: string) {
+    const textarea = textareaRef.current;
+    const selectionStart = textarea?.selectionStart ?? body.length;
+    const selectionEnd = textarea?.selectionEnd ?? selectionStart;
+    const selectedText = body.slice(selectionStart, selectionEnd);
+    const insertion = buildTextFormatInsertion(format, syntax, selectedText);
+    const nextBody = `${body.slice(0, selectionStart)}${insertion.text}${body.slice(selectionEnd)}`;
+    const nextSelectionStart = selectionStart + insertion.selectionStart;
+    const nextSelectionEnd = selectionStart + insertion.selectionEnd;
+
+    onBodyChange(nextBody);
+    window.requestAnimationFrame(() => {
+      textarea?.focus();
+      textarea?.setSelectionRange(nextSelectionStart, nextSelectionEnd);
+    });
+  }
 
   return (
     <div className="grid min-h-0 flex-1" style={{ gridTemplateColumns: gridColumns }}>
@@ -734,35 +994,184 @@ function TextEditor({
             placeholder={ui.textTitle}
             value={title}
           />
+          <label className="flex items-center gap-2 text-xs">
+            {ui.textFormat}
+            <select
+              className={`h-10 rounded-md border ${theme.border} bg-white px-2 text-sm outline-none`}
+              onChange={(event) => onFormatChange(event.target.value as TextFormat)}
+              value={format}
+            >
+              <option value="markdown">{ui.markdownFormat}</option>
+              <option value="latex">{ui.latexFormat}</option>
+            </select>
+          </label>
         </div>
         <textarea
           className="h-[calc(100%-73px)] w-full resize-none bg-transparent p-6 font-mono text-[15px] leading-7 text-[#17212b] outline-none"
           onChange={(event) => onBodyChange(event.target.value)}
           placeholder={ui.textPlaceholder}
+          ref={textareaRef}
           spellCheck={false}
           value={body}
         />
       </section>
       <section className={`min-w-0 overflow-y-auto ${showHelp ? `border-r ${theme.border}` : ""} ${theme.app} p-6`}>
-        <article className="markdown-preview mx-auto max-w-3xl text-[15px] leading-7" dangerouslySetInnerHTML={{ __html: preview }} />
+        <article className="markdown-preview latex-preview mx-auto max-w-3xl text-[15px] leading-7" dangerouslySetInnerHTML={{ __html: preview }} />
       </section>
       {showHelp ? (
         <aside className={`min-w-0 overflow-y-auto ${theme.panel}`}>
           <div className={`flex h-12 items-center border-b ${theme.border} px-4`}>
-            <h2 className="text-sm font-semibold">{ui.markdownHelp}</h2>
+            <h2 className="text-sm font-semibold">{helpTitle}</h2>
           </div>
           <div className="space-y-3 p-4 text-sm">
-            {ui.markdownTips.map(([syntax, effect]) => (
-              <div className={`rounded-md border ${theme.border} bg-white p-3`} key={syntax}>
+            {helpTips.map(([syntax, effect]) => (
+              <button
+                className={`block w-full rounded-md border ${theme.border} bg-white p-3 text-left transition ${theme.hover}`}
+                key={syntax}
+                onClick={() => insertHelpSyntax(syntax)}
+                title={effect}
+                type="button"
+              >
                 <code className="text-xs">{syntax}</code>
                 <p className={`mt-1 text-xs ${theme.muted}`}>{effect}</p>
-              </div>
+              </button>
             ))}
           </div>
         </aside>
       ) : null}
     </div>
   );
+}
+
+function buildTextFormatInsertion(format: TextFormat, syntax: string, selectedText: string): { text: string; selectionStart: number; selectionEnd: number } {
+  return format === "latex" ? buildLatexInsertion(syntax, selectedText) : buildMarkdownInsertion(syntax, selectedText);
+}
+
+function buildMarkdownInsertion(syntax: string, selectedText: string): { text: string; selectionStart: number; selectionEnd: number } {
+  const selected = selectedText || "";
+  if (syntax.startsWith("## ")) {
+    return prefixedLineInsertion("## ", selected);
+  }
+  if (syntax.startsWith("# ")) {
+    return prefixedLineInsertion("# ", selected);
+  }
+  if (syntax.startsWith("- ")) {
+    return prefixedLineInsertion("- ", selected);
+  }
+  if (syntax.startsWith("1. ")) {
+    return prefixedLineInsertion("1. ", selected);
+  }
+  if (syntax.startsWith("> ")) {
+    return prefixedLineInsertion("> ", selected);
+  }
+  if (syntax.startsWith("**")) {
+    return wrappedInsertion("**", "**", selected, markdownPlaceholder(syntax, "bold"));
+  }
+  if (syntax.startsWith("*")) {
+    return wrappedInsertion("*", "*", selected, markdownPlaceholder(syntax, "italic"));
+  }
+  if (syntax.startsWith("`") && syntax !== "```") {
+    return wrappedInsertion("`", "`", selected, markdownPlaceholder(syntax, "code"));
+  }
+  if (syntax === "```") {
+    const content = selected || "code";
+    return selected ? selectionAtEnd(`\`\`\`\n${content}\n\`\`\``) : selectedRange(`\`\`\`\n${content}\n\`\`\``, 4, 4 + content.length);
+  }
+  if (syntax.startsWith("[")) {
+    const label = selected || markdownPlaceholder(syntax, "Text");
+    const text = `[${label}](URL)`;
+    return selected ? selectedRange(text, label.length + 3, label.length + 6) : selectedRange(text, 1, 1 + label.length);
+  }
+  return selectionAtEnd(syntax);
+}
+
+function buildLatexInsertion(syntax: string, selectedText: string): { text: string; selectionStart: number; selectionEnd: number } {
+  const selected = selectedText || "";
+  if (syntax.startsWith("\\section")) {
+    return latexCommandInsertion("section", selected, latexPlaceholder(syntax, "Heading"));
+  }
+  if (syntax.startsWith("\\subsection")) {
+    return latexCommandInsertion("subsection", selected, latexPlaceholder(syntax, "Subheading"));
+  }
+  if (syntax.startsWith("\\textbf")) {
+    return latexCommandInsertion("textbf", selected, latexPlaceholder(syntax, "Bold"));
+  }
+  if (syntax.startsWith("\\emph")) {
+    return latexCommandInsertion("emph", selected, latexPlaceholder(syntax, "Italic"));
+  }
+  if (syntax.startsWith("\\begin{itemize}")) {
+    return latexEnvironmentInsertion("itemize", selected);
+  }
+  if (syntax.startsWith("\\begin{enumerate}")) {
+    return latexEnvironmentInsertion("enumerate", selected);
+  }
+  if (syntax.startsWith("\\begin{quote}")) {
+    return latexBlockInsertion("quote", selected || "Quote");
+  }
+  if (syntax.startsWith("\\begin{verbatim}")) {
+    return latexBlockInsertion("verbatim", selected || "code");
+  }
+  if (syntax.startsWith("$")) {
+    return wrappedInsertion("$", "$", selected, latexPlaceholder(syntax, "a^2 + b^2 = c^2"));
+  }
+  if (syntax.startsWith("\\[")) {
+    const content = selected || "x = \\frac{-b}{2a}";
+    return selected ? selectionAtEnd(`\\[\n${content}\n\\]`) : selectedRange(`\\[\n${content}\n\\]`, 3, 3 + content.length);
+  }
+  return selectionAtEnd(syntax);
+}
+
+function prefixedLineInsertion(prefix: string, selectedText: string): { text: string; selectionStart: number; selectionEnd: number } {
+  if (!selectedText) {
+    return selectionAtEnd(prefix);
+  }
+  return selectionAtEnd(selectedText.split(/\r?\n/).map((line) => `${prefix}${line}`).join("\n"));
+}
+
+function wrappedInsertion(prefix: string, suffix: string, selectedText: string, placeholder: string): { text: string; selectionStart: number; selectionEnd: number } {
+  const content = selectedText || placeholder;
+  const text = `${prefix}${content}${suffix}`;
+  return selectedText ? selectionAtEnd(text) : selectedRange(text, prefix.length, prefix.length + content.length);
+}
+
+function latexCommandInsertion(command: string, selectedText: string, placeholder: string): { text: string; selectionStart: number; selectionEnd: number } {
+  const content = selectedText || placeholder;
+  const prefix = `\\${command}{`;
+  const text = `${prefix}${content}}`;
+  return selectedText ? selectionAtEnd(text) : selectedRange(text, prefix.length, prefix.length + content.length);
+}
+
+function latexEnvironmentInsertion(environment: "itemize" | "enumerate", selectedText: string): { text: string; selectionStart: number; selectionEnd: number } {
+  const content = selectedText
+    ? selectedText.split(/\r?\n/).map((line) => `  \\item ${line}`).join("\n")
+    : "  \\item item";
+  const text = `\\begin{${environment}}\n${content}\n\\end{${environment}}`;
+  return selectedText ? selectionAtEnd(text) : selectedRange(text, `\\begin{${environment}}\n  \\item `.length, `\\begin{${environment}}\n  \\item `.length + 4);
+}
+
+function latexBlockInsertion(environment: "quote" | "verbatim", content: string): { text: string; selectionStart: number; selectionEnd: number } {
+  const text = `\\begin{${environment}}\n${content}\n\\end{${environment}}`;
+  return selectedRange(text, `\\begin{${environment}}\n`.length, `\\begin{${environment}}\n`.length + content.length);
+}
+
+function markdownPlaceholder(syntax: string, fallback: string): string {
+  if (syntax.startsWith("[") && syntax.includes("]")) {
+    return syntax.slice(1, syntax.indexOf("]")) || fallback;
+  }
+  return syntax.replace(/[`*_]/g, "").trim() || fallback;
+}
+
+function latexPlaceholder(syntax: string, fallback: string): string {
+  const match = /\{(.+?)\}/.exec(syntax);
+  return match?.[1] || fallback;
+}
+
+function selectedRange(text: string, selectionStart: number, selectionEnd: number): { text: string; selectionStart: number; selectionEnd: number } {
+  return { text, selectionStart, selectionEnd };
+}
+
+function selectionAtEnd(text: string): { text: string; selectionStart: number; selectionEnd: number } {
+  return selectedRange(text, text.length, text.length);
 }
 
 function MelodyEditor({
@@ -796,6 +1205,7 @@ function MelodyEditor({
   const [selectedAudioExampleId, setSelectedAudioExampleId] = useState(audioExamples[0]?.id ?? "");
   const playbackRef = useRef<{ id: number; control?: PlaybackControls }>({ id: 0 });
   const rollScrollRef = useRef<HTMLDivElement | null>(null);
+  const rollScrollPositionRef = useRef({ left: 0, top: 0 });
   const clip = useMemo(() => normalizeMelodyClip(melody), [melody]);
   const steps = Math.max(4, Math.min(maxMelodyBars * clip.beatsPerBar * clip.stepsPerBeat, clip.bars * clip.beatsPerBar * clip.stepsPerBeat));
   const cellWidth = Math.round(28 * rollZoom);
@@ -835,6 +1245,18 @@ function MelodyEditor({
       setPlayStartStep(Math.max(0, steps - 1));
     }
   }, [playStartStep, steps]);
+
+  useEffect(() => {
+    if (visualPlayback) {
+      return;
+    }
+    const container = rollScrollRef.current;
+    if (!container) {
+      return;
+    }
+    container.scrollLeft = rollScrollPositionRef.current.left;
+    container.scrollTop = rollScrollPositionRef.current.top;
+  }, [visualPlayback]);
 
   function updateClip(next: MelodyClip) {
     onMelodyChange(normalizeMelodyClip(next));
@@ -969,13 +1391,19 @@ function MelodyEditor({
   function startPlayback(trackId?: string, visual = false) {
     playbackRef.current.control?.stop();
     const playbackId = playbackRef.current.id + 1;
+    if (visual && rollScrollRef.current) {
+      rollScrollPositionRef.current = {
+        left: rollScrollRef.current.scrollLeft,
+        top: rollScrollRef.current.scrollTop
+      };
+    }
     setVisualPlayback(visual);
     setPlaybackPaused(false);
     setPlayheadStep(playStartStep);
     const control = playMelody(clip, {
       startStep: playStartStep,
       trackId,
-      onStep: setPlayheadStep,
+      onStep: visual ? undefined : setPlayheadStep,
       onEnded: () => {
         if (playbackRef.current.id !== playbackId) {
           return;
@@ -1030,10 +1458,6 @@ function MelodyEditor({
         <label className="flex items-center gap-2 text-sm">
           <input checked={freeEdit} onChange={(event) => setFreeEdit(event.target.checked)} type="checkbox" />
           {ui.freeEdit}
-        </label>
-        <label className="flex items-center gap-2 text-sm">
-          <input checked={clip.sustain} onChange={(event) => updateClip({ ...clip, sustain: event.target.checked })} type="checkbox" />
-          {ui.sustain}
         </label>
       </div>
 
@@ -1183,18 +1607,24 @@ function MelodyEditor({
       {visualPlayback ? (
         <MelodyVisualPlayer clip={clip} paused={playbackPaused} playheadStep={playheadStep ?? playStartStep} startStep={playStartStep} trackId={undefined} />
       ) : (
-      <div className="min-h-0 flex-1 overflow-auto py-5 pr-5" ref={rollScrollRef}>
+      <div className="min-h-0 flex-1 overflow-auto pb-5 pr-5" ref={rollScrollRef}>
         <div
-          className="grid w-max rounded-md border border-[#9badbd]/80 bg-transparent shadow-sm"
+          className="relative grid w-max rounded-md border border-[#9badbd]/80 bg-transparent shadow-sm"
           style={{
             gridTemplateColumns: `72px repeat(${steps}, ${cellWidth}px)`,
             gridTemplateRows: `${timelineHeight}px ${barHeight}px repeat(${pitches.length}, ${rowHeight}px)`
           }}
         >
-          <div className="sticky left-0 z-40 border-b border-r border-[#8fb3d9] bg-[#245b82] px-2 text-xs text-white shadow-[2px_0_0_rgba(0,0,0,0.12)]" style={{ lineHeight: `${timelineHeight}px` }}>
+          {playheadStep !== null ? (
+            <div
+              className="pointer-events-none absolute bottom-0 top-0 z-50 w-0 border-l-2 border-[#17212b] shadow-[0_0_0_1px_rgba(255,255,255,0.65),0_0_12px_rgba(23,33,43,0.28)]"
+              style={{ left: `${72 + playheadStep * cellWidth}px` }}
+            />
+          ) : null}
+          <div className="sticky left-0 top-0 z-[70] border-b border-r border-[#8fb3d9] bg-[#245b82] px-2 text-xs text-white shadow-[2px_0_0_rgba(0,0,0,0.12)]" style={{ lineHeight: `${timelineHeight}px` }}>
             {ui.timeline}
           </div>
-          <div className="relative col-span-full border-b border-[#8fb3d9]/70 bg-[#eaf4ff]" style={{ gridColumn: `2 / span ${steps}` }}>
+          <div className="sticky top-0 z-[60] col-span-full border-b border-[#8fb3d9]/70 bg-[#eaf4ff]" style={{ gridColumn: `2 / span ${steps}` }}>
             <div className="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 bg-[#7faad2]" />
             {Array.from({ length: steps + 1 }, (_, step) => {
               const marker = timelineMarkerKind(step, clip);
@@ -1260,7 +1690,6 @@ function MelodyEditor({
               noteLength={noteLength}
               pitch={pitch}
               playStartStep={playStartStep}
-              playheadStep={playheadStep}
               steps={steps}
               rowHeight={rowHeight}
               theme={theme}
@@ -1292,30 +1721,33 @@ function MelodyVisualPlayer({
   const secondsPerStep = 60 / normalized.bpm / normalized.stepsPerBeat;
   const [visualStep, setVisualStep] = useState(playheadStep);
   const visualAnchorRef = useRef({ step: playheadStep, time: performance.now() });
+  const visualStepRef = useRef(playheadStep);
 
   useEffect(() => {
-    visualAnchorRef.current = { step: playheadStep, time: performance.now() };
-    setVisualStep(playheadStep);
-  }, [playheadStep]);
+    visualStepRef.current = visualStep;
+  }, [visualStep]);
 
   useEffect(() => {
     if (paused) {
-      setVisualStep(playheadStep);
+      visualAnchorRef.current = { step: visualStepRef.current, time: performance.now() };
       return;
     }
 
     let frame = 0;
     const maxStep = normalized.bars * normalized.beatsPerBar * normalized.stepsPerBeat;
+    visualAnchorRef.current = { step: visualStepRef.current, time: performance.now() };
 
     function tick(now: number) {
       const elapsedSteps = (now - visualAnchorRef.current.time) / 1000 / secondsPerStep;
-      setVisualStep(Math.min(maxStep, visualAnchorRef.current.step + elapsedSteps));
+      const nextStep = Math.min(maxStep, visualAnchorRef.current.step + elapsedSteps);
+      visualStepRef.current = nextStep;
+      setVisualStep(nextStep);
       frame = window.requestAnimationFrame(tick);
     }
 
     frame = window.requestAnimationFrame(tick);
     return () => window.cancelAnimationFrame(frame);
-  }, [normalized.bars, normalized.beatsPerBar, normalized.stepsPerBeat, paused, playheadStep, secondsPerStep]);
+  }, [normalized.bars, normalized.beatsPerBar, normalized.stepsPerBeat, paused, secondsPerStep]);
 
   const visibleSteps = Math.max(16, normalized.stepsPerBeat * 8);
   const tracks = trackId ? normalized.tracks.filter((track) => track.id === trackId) : normalized.tracks;
@@ -1342,16 +1774,16 @@ function MelodyVisualPlayer({
         <div className="absolute inset-x-0 bottom-0 top-0 mx-auto max-w-[1180px]">
           {notes.map(({ note, track }) => {
             const left = pitchToVisualPercent(note.pitch);
-            const startY = 100 - ((note.start - visualStep) / visibleSteps) * 100;
-            const endY = 100 - ((note.start + note.duration - visualStep) / visibleSteps) * 100;
-            const top = Math.max(-24, Math.min(100, endY));
-            const bottom = Math.max(top + 2, Math.min(100, startY));
+            const noteStartY = 100 - ((note.start - visualStep) / visibleSteps) * 100;
+            const noteEndY = 100 - ((note.start + Math.max(1, note.duration) - visualStep) / visibleSteps) * 100;
+            const top = Math.max(-24, Math.min(100, noteEndY));
+            const bottom = Math.max(top + 2, Math.min(100, noteStartY));
             const height = bottom - top;
             const isActive = note.start <= visualStep && note.start + note.duration > visualStep;
             const fillAlpha = visualNoteFillAlpha(note.duration, visibleSteps, isActive);
             return (
               <div
-                className="absolute rounded-sm border transition-[top,height,background-color,border-color,box-shadow,filter] duration-150 ease-linear"
+                className="absolute rounded-sm border"
                 key={`${track.id}-${note.id}`}
                 style={{
                   left: `${left}%`,
@@ -1407,7 +1839,7 @@ function MelodyVisualPlayer({
         </div>
       </div>
       <div className="absolute left-4 top-4 rounded border border-[#35597a] bg-[#0f2138]/80 px-3 py-1 text-xs text-[#dbeafe]">
-        {pitchName(melodyMinPitch)} - {pitchName(melodyMaxPitch)} · {Math.max(0, playheadStep - startStep)}
+        {pitchName(melodyMinPitch)} - {pitchName(melodyMaxPitch)} · {Math.max(0, Math.floor(visualStep) - startStep)}
       </div>
     </div>
   );
@@ -1422,7 +1854,6 @@ function MelodyRow({
   noteLength,
   pitch,
   playStartStep,
-  playheadStep,
   rowHeight,
   steps,
   theme,
@@ -1437,7 +1868,6 @@ function MelodyRow({
   noteLength: number;
   pitch: number;
   playStartStep: number;
-  playheadStep: number | null;
   rowHeight: number;
   steps: number;
   theme: (typeof themes)[ThemeKey];
@@ -1623,7 +2053,7 @@ function MelodyRow({
                 ? hexWithAlpha(background, isContinuation ? 0.48 : active ? 0.86 : 0.35)
                 : isHoverPreview
                   ? "rgba(36, 91, 130, 0.16)"
-                  : melodyCellBackground(step, playheadStep, clip),
+                  : melodyCellBackground(step, clip),
               boxShadow: [
                 isHoverPreview ? "inset 0 0 0 2px rgba(36, 91, 130, 0.85)" : undefined,
                 isNoteStart && visible ? `inset 4px 0 0 ${visible.track.color}` : undefined,
@@ -2326,10 +2756,7 @@ function randomHexColor(): string {
     .padStart(6, "0")}`;
 }
 
-function melodyCellBackground(step: number, playheadStep: number | null, clip: MelodyClip): string {
-  if (step === playheadStep) {
-    return "rgba(219, 234, 254, 0.42)";
-  }
+function melodyCellBackground(step: number, clip: MelodyClip): string {
   if (step % (clip.beatsPerBar * clip.stepsPerBeat) === 0) {
     return "rgba(238, 246, 255, 0.26)";
   }

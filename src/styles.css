@@ -130,3 +130,42 @@ textarea {
   background: transparent !important;
   color: inherit !important;
 }
+
+.latex-preview .latex-inline-math,
+.latex-preview .latex-math {
+  font-family: Cambria Math, Times New Roman, serif;
+}
+
+.latex-preview .latex-inline-math {
+  background: rgba(36, 91, 130, 0.08);
+  border-radius: 4px;
+  padding: 0.05rem 0.25rem;
+}
+
+.latex-preview .latex-math {
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid #d8e1ea;
+  border-radius: 8px;
+  margin: 1rem 0;
+  overflow-x: auto;
+  padding: 0.85rem 1rem;
+  text-align: center;
+}
+
+.latex-preview .latex-frac {
+  display: inline-flex;
+  flex-direction: column;
+  font-family: Cambria Math, Times New Roman, serif;
+  line-height: 1.05;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.latex-preview .latex-frac span:first-child {
+  border-bottom: 1px solid currentColor;
+  padding: 0 0.2rem 0.08rem;
+}
+
+.latex-preview .latex-frac span:last-child {
+  padding: 0.08rem 0.2rem 0;
+}

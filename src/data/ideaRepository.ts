@@ -36,6 +36,10 @@ export async function exportMarkdownPdf(title: string, body: string): Promise<st
   return invoke<string | null>("export_markdown_pdf", { title, body });
 }
 
+export async function exportLatexPdf(title: string, body: string): Promise<string | null> {
+  return invoke<string | null>("export_latex_pdf", { title, body });
+}
+
 export async function exportCanvasPng(title: string, canvas: PixelCanvas): Promise<string | null> {
   return invoke<string | null>("export_canvas_png", { title, canvas });
 }
@@ -73,6 +77,7 @@ function normalizeIdea(idea: StoredIdea): Idea {
   return {
     ...idea,
     title: idea.title?.trim() || fallbackTitle(idea),
+    textFormat: idea.kind === "markdown" ? idea.textFormat ?? "markdown" : undefined,
     melody: idea.melody ? normalizeMelodyClip(idea.melody) : undefined
   };
 }

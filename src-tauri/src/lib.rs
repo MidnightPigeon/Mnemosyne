@@ -60,6 +60,8 @@ pub struct MelodyClip {
 pub struct Idea {
     pub id: String,
     pub kind: String,
+    #[serde(default)]
+    pub text_format: Option<String>,
     pub title: Option<String>,
     pub body: String,
     pub canvas: Option<PixelCanvas>,
@@ -73,6 +75,8 @@ pub struct Idea {
 pub struct IdeaInput {
     pub id: String,
     pub kind: String,
+    #[serde(default)]
+    pub text_format: Option<String>,
     pub title: String,
     pub body: String,
     pub canvas: Option<PixelCanvas>,
@@ -170,6 +174,7 @@ fn save_idea(app: AppHandle, input: IdeaInput) -> Result<Idea, String> {
     let idea = Idea {
         id: input.id,
         kind: input.kind,
+        text_format: input.text_format,
         title: Some(input.title),
         body: input.body,
         canvas: input.canvas,
@@ -225,6 +230,22 @@ fn export_markdown_pdf(title: String, body: String) -> Result<Option<String>, St
     };
 
     render_markdown_pdf(&title, &body, &path)?;
+    Ok(Some(path.to_string_lossy().to_string()))
+}
+
+#[tauri::command]
+fn export_latex_pdf(title: String, body: String) -> Result<Option<String>, String> {
+    let default_name = format!("{}.pdf", safe_file_stem(&title, "text-record"));
+    let Some(path) = rfd::FileDialog::new()
+        .set_title("另存为 PDF")
+        .set_file_name(&default_name)
+        .add_filter("PDF", &["pdf"])
+        .save_file()
+    else {
+        return Ok(None);
+    };
+
+    render_latex_pdf(&title, &body, &path)?;
     Ok(Some(path.to_string_lossy().to_string()))
 }
 
@@ -298,6 +319,142 @@ fn render_markdown_pdf(title: &str, body: &str, path: &Path) -> Result<(), Strin
         }
 
         doc.push(elements::Paragraph::new(inline_markdown_to_text(trimmed)));
+    }
+
+    doc.render_to_file(path).map_err(|error| error.to_string())
+}
+
+fn render_latex_pdf(title: &str, body: &str, path: &Path) -> Result<(), String> {
+    let font_family = load_pdf_font_family()?;
+    let mut doc = genpdf::Document::new(font_family);
+    doc.set_title(title);
+    doc.set_font_size(11);
+
+    let mut decorator = genpdf::SimplePageDecorator::new();
+    decorator.set_margins(14);
+    doc.set_page_decorator(decorator);
+
+    let title_style = style::Style::new().with_font_size(22).bold();
+    doc.push(elements::Paragraph::new(title.to_string()).styled(title_style));
+    doc.push(elements::Break::new(1));
+
+    let mut in_verbatim = false;
+    let mut in_quote = false;
+    let mut list_stack: Vec<&str> = Vec::new();
+    let mut ordered_index_stack: Vec<usize> = Vec::new();
+
+    for line in body.lines() {
+        let trimmed = line.trim();
+
+        if trimmed == "\\begin{verbatim}" {
+            in_verbatim = true;
+            doc.push(elements::Break::new(1));
+            continue;
+        }
+        if trimmed == "\\end{verbatim}" {
+            in_verbatim = false;
+            doc.push(elements::Break::new(1));
+            continue;
+        }
+        if in_verbatim {
+            let code_style = style::Style::new()
+                .with_font_size(9)
+                .with_color(style::Color::Rgb(70, 77, 86));
+            doc.push(elements::Paragraph::new(format!("    {line}")).styled(code_style));
+            continue;
+        }
+
+        if trimmed.is_empty()
+            || trimmed.starts_with("\\documentclass")
+            || trimmed.starts_with("\\usepackage")
+            || trimmed == "\\begin{document}"
+            || trimmed == "\\end{document}"
+            || trimmed.starts_with("\\maketitle")
+        {
+            if trimmed.is_empty() {
+                doc.push(elements::Break::new(1));
+            }
+            continue;
+        }
+
+        match trimmed {
+            "\\begin{quote}" => {
+                in_quote = true;
+                doc.push(elements::Break::new(1));
+                continue;
+            }
+            "\\end{quote}" => {
+                in_quote = false;
+                doc.push(elements::Break::new(1));
+                continue;
+            }
+            "\\begin{itemize}" => {
+                list_stack.push("itemize");
+                continue;
+            }
+            "\\end{itemize}" => {
+                list_stack.pop();
+                continue;
+            }
+            "\\begin{enumerate}" => {
+                list_stack.push("enumerate");
+                ordered_index_stack.push(1);
+                continue;
+            }
+            "\\end{enumerate}" => {
+                list_stack.pop();
+                ordered_index_stack.pop();
+                continue;
+            }
+            _ => {}
+        }
+
+        if let Some((command, content)) = latex_braced_command(trimmed) {
+            if matches!(command, "title" | "author" | "date") {
+                continue;
+            }
+
+            if matches!(command, "section" | "subsection" | "subsubsection") {
+                let font_size = match command {
+                    "section" => 18,
+                    "subsection" => 15,
+                    _ => 13,
+                };
+                doc.push(elements::Break::new(1));
+                doc.push(
+                    elements::Paragraph::new(inline_latex_to_text(content))
+                        .styled(style::Style::new().with_font_size(font_size).bold()),
+                );
+                continue;
+            }
+        }
+
+        if let Some(item) = trimmed.strip_prefix("\\item") {
+            let content = inline_latex_to_text(item.trim());
+            let indent = "  ".repeat(list_stack.len().saturating_sub(1));
+            let prefix = if list_stack.last() == Some(&"enumerate") {
+                let index = ordered_index_stack.last_mut().map(|value| {
+                    let current = *value;
+                    *value += 1;
+                    current
+                }).unwrap_or(1);
+                format!("{indent}{index}. ")
+            } else {
+                format!("{indent}• ")
+            };
+            doc.push(elements::Paragraph::new(format!("{prefix}{content}")));
+            continue;
+        }
+
+        let text = inline_latex_to_text(trimmed);
+        if in_quote {
+            let quote_style = style::Style::new()
+                .italic()
+                .with_color(style::Color::Rgb(83, 98, 112));
+            doc.push(elements::Paragraph::new(format!("\"{text}\"")).styled(quote_style));
+        } else {
+            doc.push(elements::Paragraph::new(text));
+        }
     }
 
     doc.render_to_file(path).map_err(|error| error.to_string())
@@ -412,6 +569,128 @@ fn replace_markdown_links(input: &str) -> String {
 
     output.push_str(rest);
     output
+}
+
+fn latex_braced_command(line: &str) -> Option<(&str, &str)> {
+    let rest = line.strip_prefix('\\')?;
+    let command_len = rest
+        .char_indices()
+        .take_while(|(_, character)| character.is_ascii_alphabetic())
+        .map(|(index, character)| index + character.len_utf8())
+        .last()?;
+    let command = &rest[..command_len];
+    let after_command = rest[command_len..].trim_start();
+    let content = braced_content(after_command)?;
+    Some((command, content))
+}
+
+fn braced_content(input: &str) -> Option<&str> {
+    let value = input.trim();
+    if !value.starts_with('{') || !value.ends_with('}') {
+        return None;
+    }
+    Some(&value[1..value.len() - 1])
+}
+
+fn inline_latex_to_text(input: &str) -> String {
+    let mut text = input.trim().to_string();
+    text = text.replace("\\\\", "\n");
+    text = replace_latex_frac(&text);
+
+    for command in ["textbf", "textit", "emph", "underline", "texttt"] {
+        text = replace_latex_simple_command(&text, command);
+    }
+
+    for (from, to) in [
+        ("\\%", "%"),
+        ("\\&", "&"),
+        ("\\#", "#"),
+        ("\\_", "_"),
+        ("\\{", "{"),
+        ("\\}", "}"),
+        ("~", " "),
+        ("\\[", ""),
+        ("\\]", ""),
+        ("\\(", ""),
+        ("\\)", ""),
+        ("$", ""),
+    ] {
+        text = text.replace(from, to);
+    }
+
+    text
+}
+
+fn replace_latex_simple_command(input: &str, command: &str) -> String {
+    let pattern = format!("\\{command}{{");
+    let mut output = String::new();
+    let mut rest = input;
+
+    while let Some(start) = rest.find(&pattern) {
+        output.push_str(&rest[..start]);
+        let content_start = start + pattern.len();
+        let Some(content_end) = find_matching_brace(&rest[content_start..]) else {
+            output.push_str(&rest[start..]);
+            return output;
+        };
+        output.push_str(&rest[content_start..content_start + content_end]);
+        rest = &rest[content_start + content_end + 1..];
+    }
+
+    output.push_str(rest);
+    output
+}
+
+fn replace_latex_frac(input: &str) -> String {
+    let mut output = String::new();
+    let mut rest = input;
+
+    while let Some(start) = rest.find("\\frac{") {
+        output.push_str(&rest[..start]);
+        let numerator_start = start + "\\frac{".len();
+        let Some(numerator_end) = find_matching_brace(&rest[numerator_start..]) else {
+            output.push_str(&rest[start..]);
+            return output;
+        };
+        let after_numerator = numerator_start + numerator_end + 1;
+        let denominator_prefix = &rest[after_numerator..];
+        if !denominator_prefix.starts_with('{') {
+            output.push_str(&rest[start..after_numerator]);
+            rest = denominator_prefix;
+            continue;
+        }
+        let denominator_start = after_numerator + 1;
+        let Some(denominator_end) = find_matching_brace(&rest[denominator_start..]) else {
+            output.push_str(&rest[start..]);
+            return output;
+        };
+        output.push('(');
+        output.push_str(&rest[numerator_start..numerator_start + numerator_end]);
+        output.push_str(" / ");
+        output.push_str(&rest[denominator_start..denominator_start + denominator_end]);
+        output.push(')');
+        rest = &rest[denominator_start + denominator_end + 1..];
+    }
+
+    output.push_str(rest);
+    output
+}
+
+fn find_matching_brace(input: &str) -> Option<usize> {
+    let mut depth = 1usize;
+    for (index, character) in input.char_indices() {
+        match character {
+            '{' => depth += 1,
+            '}' => {
+                depth = depth.saturating_sub(1);
+                if depth == 0 {
+                    return Some(index);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
 }
 
 #[tauri::command]
@@ -538,6 +817,7 @@ pub fn run() {
             delete_idea,
             export_markdown,
             export_markdown_pdf,
+            export_latex_pdf,
             export_canvas_png,
             export_canvas_jpg,
             import_midi_file,
