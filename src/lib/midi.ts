@@ -11,6 +11,7 @@ const ticksPerQuarter = 480;
 const defaultStepsPerBeat = 4;
 const defaultBeatsPerBar = 4;
 const defaultTrackVolume = 100;
+const maxMelodyBars = 256;
 const trackColors = ["#2563eb", "#dc2626", "#16a34a", "#9333ea", "#ea580c"];
 
 export const gmInstruments = [
@@ -64,7 +65,7 @@ export function createMelodyTrack(index: number): MelodyTrack {
 export function normalizeMelodyClip(clip?: Partial<MelodyClip>): MelodyClip {
   const beatsPerBar = clamp(Math.round(clip?.beatsPerBar ?? defaultBeatsPerBar), 1, 12);
   const legacyBeats = Math.max(1, Math.round(clip?.beats ?? beatsPerBar));
-  const bars = clamp(Math.round(clip?.bars ?? Math.max(1, Math.ceil(legacyBeats / beatsPerBar))), 1, 64);
+  const bars = clamp(Math.round(clip?.bars ?? Math.max(1, Math.ceil(legacyBeats / beatsPerBar))), 1, maxMelodyBars);
   const tracks = (clip?.tracks?.length ? clip.tracks : [createMelodyTrack(0)]).slice(0, 5).map((track, index) => ({
     id: track.id || crypto.randomUUID(),
     name: track.name || `音轨 ${index + 1}`,

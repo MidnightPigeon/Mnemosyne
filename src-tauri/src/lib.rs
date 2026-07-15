@@ -404,9 +404,8 @@ fn replace_markdown_links(input: &str) -> String {
         let url = &after_label[1..1 + url_end];
         output.push_str(label);
         if !url.trim().is_empty() {
-            output.push_str(" (");
+            output.push_str(": ");
             output.push_str(url.trim());
-            output.push(')');
         }
         rest = &after_label[2 + url_end..];
     }

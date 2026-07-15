@@ -117,6 +117,7 @@ type ThemeKey = keyof typeof themes;
 type LanguageKey = "zh" | "en";
 
 const pixelScaleFactors = [0.1, 0.25, 0.5, 0.75, 1.5, 2, 3, 4];
+const maxMelodyBars = 256;
 const melodyMinPitch = 21; // A0，标准 88 键最低音。
 const melodyMaxPitch = 108; // C8，覆盖常见小提琴高音写作上沿。
 
@@ -161,6 +162,7 @@ const uiText = {
     bars: "小节",
     beatsPerBar: "每小节拍",
     noteLength: "音符长度",
+    freeEdit: "自由编辑",
     sustain: "延音",
     stop: "停止",
     pause: "暂停",
@@ -271,6 +273,7 @@ const uiText = {
     bars: "Bars",
     beatsPerBar: "Beats/bar",
     noteLength: "Note length",
+    freeEdit: "Free edit",
     sustain: "Sustain",
     stop: "Stop",
     pause: "Pause",
@@ -785,16 +788,16 @@ function MelodyEditor({
   const [playStartStep, setPlayStartStep] = useState(0);
   const [playheadStep, setPlayheadStep] = useState<number | null>(null);
   const [visualPlayback, setVisualPlayback] = useState(false);
-  const [hoverNote, setHoverNote] = useState<{ pitch: number; start: number } | null>(null);
   const [noteLength, setNoteLength] = useState(1);
+  const [freeEdit, setFreeEdit] = useState(false);
   const [rollZoom, setRollZoom] = useState(1);
   const [editingTrackId, setEditingTrackId] = useState<string | null>(null);
   const [editingTrackName, setEditingTrackName] = useState("");
   const [selectedAudioExampleId, setSelectedAudioExampleId] = useState(audioExamples[0]?.id ?? "");
   const playbackRef = useRef<{ id: number; control?: PlaybackControls }>({ id: 0 });
   const rollScrollRef = useRef<HTMLDivElement | null>(null);
-  const clip = normalizeMelodyClip(melody);
-  const steps = Math.max(4, Math.min(2048, clip.bars * clip.beatsPerBar * clip.stepsPerBeat));
+  const clip = useMemo(() => normalizeMelodyClip(melody), [melody]);
+  const steps = Math.max(4, Math.min(maxMelodyBars * clip.beatsPerBar * clip.stepsPerBeat, clip.bars * clip.beatsPerBar * clip.stepsPerBeat));
   const cellWidth = Math.round(28 * rollZoom);
   const rowHeight = Math.round(22 * rollZoom);
   const timelineHeight = Math.round(24 * rollZoom);
@@ -827,6 +830,12 @@ function MelodyEditor({
     }
   }, [cellWidth, playheadStep, visualPlayback]);
 
+  useEffect(() => {
+    if (playStartStep >= steps) {
+      setPlayStartStep(Math.max(0, steps - 1));
+    }
+  }, [playStartStep, steps]);
+
   function updateClip(next: MelodyClip) {
     onMelodyChange(normalizeMelodyClip(next));
   }
@@ -851,6 +860,49 @@ function MelodyEditor({
       previewMelodyNote(pitch, track.program, 1);
       return { ...track, notes: [...track.notes, note] };
     });
+  }
+
+  function commitFreeNote(pitch: number, start: number, duration: number) {
+    if (!activeTrack) {
+      return;
+    }
+
+    const safeStart = clampNumber(Math.round(start), 0, steps - 1);
+    const safeDuration = clampNumber(Math.round(duration), 1, steps - safeStart);
+    const safeEnd = safeStart + safeDuration;
+
+    updateTrack(activeTrack.id, (track) => {
+      const clickedNote =
+        safeDuration === 1
+          ? track.notes.find((note) => note.pitch === pitch && safeStart >= note.start && safeStart < note.start + note.duration)
+          : undefined;
+      if (clickedNote) {
+        previewMelodyNote(pitch, track.program, 1);
+        return { ...track, notes: track.notes.filter((note) => note.id !== clickedNote.id) };
+      }
+
+      const notes = track.notes.filter((note) => {
+        if (note.pitch !== pitch) {
+          return true;
+        }
+        const noteEnd = note.start + note.duration;
+        return noteEnd <= safeStart || note.start >= safeEnd;
+      });
+      return {
+        ...track,
+        notes: [
+          ...notes,
+          {
+            id: crypto.randomUUID(),
+            pitch,
+            start: safeStart,
+            duration: safeDuration,
+            velocity: 96
+          }
+        ]
+      };
+    });
+    previewMelodyNote(pitch, activeTrack.program, Math.min(safeDuration, 16));
   }
 
   function addTrack() {
@@ -972,13 +1024,20 @@ function MelodyEditor({
           value={title}
         />
         <NumberControl label="BPM" max={240} min={40} onChange={(value) => updateClip({ ...clip, bpm: value })} value={clip.bpm} />
-        <NumberControl label={ui.bars} max={64} min={1} onChange={(value) => updateClip({ ...clip, bars: value })} value={clip.bars} />
+        <NumberControl label={ui.bars} max={maxMelodyBars} min={1} onChange={(value) => updateClip({ ...clip, bars: value })} value={clip.bars} />
         <NumberControl label={ui.beatsPerBar} max={12} min={1} onChange={(value) => updateClip({ ...clip, beatsPerBar: value })} value={clip.beatsPerBar} />
-        <NumberControl label={ui.noteLength} max={16} min={1} onChange={setNoteLength} value={noteLength} />
+        <NumberControl disabled={freeEdit} label={ui.noteLength} max={16} min={1} onChange={setNoteLength} value={noteLength} />
+        <label className="flex items-center gap-2 text-sm">
+          <input checked={freeEdit} onChange={(event) => setFreeEdit(event.target.checked)} type="checkbox" />
+          {ui.freeEdit}
+        </label>
         <label className="flex items-center gap-2 text-sm">
           <input checked={clip.sustain} onChange={(event) => updateClip({ ...clip, sustain: event.target.checked })} type="checkbox" />
           {ui.sustain}
         </label>
+      </div>
+
+      <div className={`flex flex-wrap items-center gap-3 border-b ${theme.border} ${theme.panel} px-5 py-2`}>
         {playbackControl ? (
           <>
             <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={stopCurrentPlayback} type="button">
@@ -990,22 +1049,19 @@ function MelodyEditor({
           </>
         ) : (
           <>
-            <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => startPlayback()} type="button">
-              {ui.playAudio}
-            </button>
             <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => startPlayback(undefined, true)} type="button">
               {ui.visualPlay}
             </button>
+            <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => startPlayback()} type="button">
+              {ui.playAudio}
+            </button>
           </>
         )}
-        <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleImportMidi()} type="button">
-          {ui.importMidi}
-        </button>
-      </div>
-
-      <div className={`flex flex-wrap items-center gap-3 border-b ${theme.border} ${theme.panel} px-5 py-2`}>
         <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} disabled={!activeTrack || Boolean(playbackControl)} onClick={() => startPlayback(activeTrack?.id)} type="button">
           {ui.playTrack}
+        </button>
+        <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleImportMidi()} type="button">
+          {ui.importMidi}
         </button>
         <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={addTrack} type="button">
           {ui.addTrack}
@@ -1125,7 +1181,7 @@ function MelodyEditor({
       </div>
 
       {visualPlayback ? (
-        <MelodyVisualPlayer clip={clip} playheadStep={playheadStep ?? playStartStep} startStep={playStartStep} trackId={undefined} />
+        <MelodyVisualPlayer clip={clip} paused={playbackPaused} playheadStep={playheadStep ?? playStartStep} startStep={playStartStep} trackId={undefined} />
       ) : (
       <div className="min-h-0 flex-1 overflow-auto py-5 pr-5" ref={rollScrollRef}>
         <div
@@ -1138,18 +1194,32 @@ function MelodyEditor({
           <div className="sticky left-0 z-40 border-b border-r border-[#8fb3d9] bg-[#245b82] px-2 text-xs text-white shadow-[2px_0_0_rgba(0,0,0,0.12)]" style={{ lineHeight: `${timelineHeight}px` }}>
             {ui.timeline}
           </div>
-          {Array.from({ length: steps }, (_, step) => (
-            <button
-              className="border-b border-r border-[#8fb3d9]/80 text-[10px]"
-              key={`timeline-${step}`}
-              onClick={() => setPlayStartStep(step)}
-              style={{
-                backgroundColor: playheadStep === step ? "rgba(23, 33, 43, 0.88)" : step === playStartStep ? "rgba(59, 130, 196, 0.74)" : "rgba(217, 236, 255, 0.58)"
-              }}
-              title={`${ui.playStart}: ${step + 1}`}
-              type="button"
-            />
-          ))}
+          <div className="relative col-span-full border-b border-[#8fb3d9]/70 bg-[#eaf4ff]" style={{ gridColumn: `2 / span ${steps}` }}>
+            <div className="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 bg-[#7faad2]" />
+            {Array.from({ length: steps + 1 }, (_, step) => {
+              const marker = timelineMarkerKind(step, clip);
+              const selectableStep = Math.min(step, steps - 1);
+              const selected = selectableStep === playStartStep;
+              const playing = step === playheadStep;
+              return (
+                <button
+                  aria-label={`${ui.playStart}: ${selectableStep + 1}`}
+                  className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border transition"
+                  key={`timeline-${step}`}
+                  onClick={() => setPlayStartStep(selectableStep)}
+                  style={{
+                    left: `${step * cellWidth}px`,
+                    width: playing ? 12 : selected ? 11 : marker === "bar" ? 8 : marker === "beat" ? 5 : 3,
+                    height: playing ? 12 : selected ? 11 : marker === "bar" ? 8 : marker === "beat" ? 5 : 3,
+                    backgroundColor: playing ? "#17212b" : selected ? "#245b82" : marker === "bar" ? "#ffffff" : "#9fbfe0",
+                    borderColor: playing || selected ? "#17212b" : marker === "bar" ? "#5c8fbd" : "#8fb3d9"
+                  }}
+                  title={`${ui.playStart}: ${selectableStep + 1}`}
+                  type="button"
+                />
+              );
+            })}
+          </div>
           <div
             className="sticky left-0 z-30 border-b border-r border-[#d8e1ea] bg-[#f8fbff] px-2 text-xs shadow-[2px_0_0_rgba(0,0,0,0.08)]"
             style={{ lineHeight: `${barHeight}px` }}
@@ -1158,9 +1228,9 @@ function MelodyEditor({
           </div>
           {Array.from({ length: steps }, (_, step) => (
             <button
-              className={`border-b border-r border-[#d8e1ea]/75 text-center text-[10px] ${
+              className={`border-b text-center text-[10px] ${gridBorderClass(step, clip)} ${
                 step === playStartStep
-                  ? "font-semibold text-[#245b82]"
+                  ? "border-l-2 border-l-[#245b82] font-semibold text-[#245b82]"
                   : step % (clip.beatsPerBar * clip.stepsPerBeat) === 0
                     ? "font-semibold text-[#245b82]"
                     : "text-[#8aa0b5]"
@@ -1184,12 +1254,13 @@ function MelodyEditor({
               activeTrackId={activeTrack?.id}
               activeTrackProgram={activeTrack?.program ?? 0}
               clip={clip}
-              hoverNote={hoverNote}
+              commitFreeNote={commitFreeNote}
+              freeEdit={freeEdit}
               key={pitch}
               noteLength={noteLength}
               pitch={pitch}
+              playStartStep={playStartStep}
               playheadStep={playheadStep}
-              setHoverNote={setHoverNote}
               steps={steps}
               rowHeight={rowHeight}
               theme={theme}
@@ -1206,24 +1277,54 @@ function MelodyEditor({
 
 function MelodyVisualPlayer({
   clip,
+  paused,
   playheadStep,
   startStep,
   trackId
 }: {
   clip: MelodyClip;
+  paused: boolean;
   playheadStep: number;
   startStep: number;
   trackId?: string;
 }) {
-  const normalized = normalizeMelodyClip(clip);
+  const normalized = useMemo(() => normalizeMelodyClip(clip), [clip]);
+  const secondsPerStep = 60 / normalized.bpm / normalized.stepsPerBeat;
+  const [visualStep, setVisualStep] = useState(playheadStep);
+  const visualAnchorRef = useRef({ step: playheadStep, time: performance.now() });
+
+  useEffect(() => {
+    visualAnchorRef.current = { step: playheadStep, time: performance.now() };
+    setVisualStep(playheadStep);
+  }, [playheadStep]);
+
+  useEffect(() => {
+    if (paused) {
+      setVisualStep(playheadStep);
+      return;
+    }
+
+    let frame = 0;
+    const maxStep = normalized.bars * normalized.beatsPerBar * normalized.stepsPerBeat;
+
+    function tick(now: number) {
+      const elapsedSteps = (now - visualAnchorRef.current.time) / 1000 / secondsPerStep;
+      setVisualStep(Math.min(maxStep, visualAnchorRef.current.step + elapsedSteps));
+      frame = window.requestAnimationFrame(tick);
+    }
+
+    frame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(frame);
+  }, [normalized.bars, normalized.beatsPerBar, normalized.stepsPerBeat, paused, playheadStep, secondsPerStep]);
+
   const visibleSteps = Math.max(16, normalized.stepsPerBeat * 8);
   const tracks = trackId ? normalized.tracks.filter((track) => track.id === trackId) : normalized.tracks;
   const notes = tracks.flatMap((track) =>
     track.notes
-      .filter((note) => note.start + note.duration >= playheadStep && note.start <= playheadStep + visibleSteps)
+      .filter((note) => note.start + note.duration >= visualStep && note.start <= visualStep + visibleSteps)
       .map((note) => ({ note, track }))
   );
-  const activeNotes = notes.filter(({ note }) => note.start <= playheadStep && note.start + note.duration > playheadStep);
+  const activeNotes = notes.filter(({ note }) => note.start <= visualStep && note.start + note.duration > visualStep);
   const activePitches = new Set(activeNotes.map(({ note }) => note.pitch));
   const activePitchColors = new Map(activeNotes.map(({ note, track }) => [note.pitch, track.color]));
   const keys = useMemo(() => Array.from({ length: melodyMaxPitch - melodyMinPitch + 1 }, (_, index) => melodyMinPitch + index), []);
@@ -1241,12 +1342,12 @@ function MelodyVisualPlayer({
         <div className="absolute inset-x-0 bottom-0 top-0 mx-auto max-w-[1180px]">
           {notes.map(({ note, track }) => {
             const left = pitchToVisualPercent(note.pitch);
-            const startY = 100 - ((note.start - playheadStep) / visibleSteps) * 100;
-            const endY = 100 - ((note.start + note.duration - playheadStep) / visibleSteps) * 100;
+            const startY = 100 - ((note.start - visualStep) / visibleSteps) * 100;
+            const endY = 100 - ((note.start + note.duration - visualStep) / visibleSteps) * 100;
             const top = Math.max(-24, Math.min(100, endY));
             const bottom = Math.max(top + 2, Math.min(100, startY));
             const height = bottom - top;
-            const isActive = note.start <= playheadStep && note.start + note.duration > playheadStep;
+            const isActive = note.start <= visualStep && note.start + note.duration > visualStep;
             const fillAlpha = visualNoteFillAlpha(note.duration, visibleSteps, isActive);
             return (
               <div
@@ -1316,12 +1417,13 @@ function MelodyRow({
   activeTrackId,
   activeTrackProgram,
   clip,
-  hoverNote,
+  commitFreeNote,
+  freeEdit,
   noteLength,
   pitch,
+  playStartStep,
   playheadStep,
   rowHeight,
-  setHoverNote,
   steps,
   theme,
   toggleNote,
@@ -1330,21 +1432,53 @@ function MelodyRow({
   activeTrackId?: string;
   activeTrackProgram: number;
   clip: MelodyClip;
-  hoverNote: { pitch: number; start: number } | null;
+  commitFreeNote: (pitch: number, start: number, duration: number) => void;
+  freeEdit: boolean;
   noteLength: number;
   pitch: number;
+  playStartStep: number;
   playheadStep: number | null;
   rowHeight: number;
-  setHoverNote: (note: { pitch: number; start: number } | null) => void;
   steps: number;
   theme: (typeof themes)[ThemeKey];
   toggleNote: (pitch: number, start: number) => void;
   ui: UiCopy;
 }) {
   const blackKey = isBlackKey(pitch);
+  const [hoverNote, setHoverNote] = useState<{ start: number; duration?: number } | null>(null);
   const holdTimerRef = useRef<number>();
   const holdStopRef = useRef<(() => void) | null>(null);
   const longPressRef = useRef(false);
+  const freeEditDragRef = useRef<{ anchor: number; current: number } | null>(null);
+  const finishFreeEditRef = useRef<() => void>(() => undefined);
+  const rowSlots = useMemo(() => {
+    const slots: Array<{
+      active?: { note: MelodyNote; track: MelodyClip["tracks"][number] };
+      visible?: { note: MelodyNote; track: MelodyClip["tracks"][number] };
+    }> = Array.from({ length: steps }, () => ({}));
+
+    for (const track of clip.tracks) {
+      const isActiveTrack = track.id === activeTrackId;
+      for (const note of track.notes) {
+        if (note.pitch !== pitch) {
+          continue;
+        }
+        const start = clampNumber(note.start, 0, steps - 1);
+        const end = clampNumber(note.start + note.duration, start + 1, steps);
+        const entry = { note, track };
+        for (let step = start; step < end; step += 1) {
+          if (isActiveTrack) {
+            slots[step].active = entry;
+            slots[step].visible = entry;
+          } else if (!slots[step].visible) {
+            slots[step].visible = entry;
+          }
+        }
+      }
+    }
+
+    return slots;
+  }, [activeTrackId, clip.tracks, pitch, steps]);
 
   function startHoldPreview() {
     longPressRef.current = false;
@@ -1366,6 +1500,64 @@ function MelodyRow({
     holdStopRef.current = null;
   }
 
+  function updateFreeEditPreview(anchor: number, current: number) {
+    const start = Math.min(anchor, current);
+    const duration = Math.abs(current - anchor) + 1;
+    setHoverNote({ start, duration });
+  }
+
+  function startFreeEdit(event: ReactPointerEvent<HTMLButtonElement>, step: number) {
+    if (!freeEdit) {
+      return;
+    }
+    event.preventDefault();
+    freeEditDragRef.current = { anchor: step, current: step };
+    updateFreeEditPreview(step, step);
+  }
+
+  function updateFreeEdit(step: number) {
+    const drag = freeEditDragRef.current;
+    if (!freeEdit || !drag) {
+      return;
+    }
+    drag.current = step;
+    updateFreeEditPreview(drag.anchor, drag.current);
+  }
+
+  function finishFreeEdit(step: number) {
+    const drag = freeEditDragRef.current;
+    if (!freeEdit || !drag) {
+      return;
+    }
+    drag.current = step;
+    const start = Math.min(drag.anchor, drag.current);
+    const duration = Math.abs(drag.current - drag.anchor) + 1;
+    freeEditDragRef.current = null;
+    setHoverNote(null);
+    commitFreeNote(pitch, start, duration);
+  }
+
+  finishFreeEditRef.current = () => {
+    const drag = freeEditDragRef.current;
+    if (!drag) {
+      return;
+    }
+    finishFreeEdit(drag.current);
+  };
+
+  useEffect(() => {
+    function finishDrag() {
+      finishFreeEditRef.current();
+    }
+
+    window.addEventListener("pointerup", finishDrag);
+    window.addEventListener("pointercancel", finishDrag);
+    return () => {
+      window.removeEventListener("pointerup", finishDrag);
+      window.removeEventListener("pointercancel", finishDrag);
+    };
+  }, []);
+
   return (
     <>
       <div
@@ -1386,33 +1578,45 @@ function MelodyRow({
         {pitchName(pitch)}
       </div>
       {Array.from({ length: steps }, (_, step) => {
-        const notes = clip.tracks.flatMap((track) =>
-          track.notes
-            .filter((note) => note.pitch === pitch && step >= note.start && step < note.start + note.duration)
-            .map((note) => ({ note, track }))
-        );
-        const active = notes.find((entry) => entry.track.id === activeTrackId);
-        const background = active?.track.color ?? notes[0]?.track.color;
-        const visible = active ?? notes[0];
+        const active = rowSlots[step].active;
+        const visible = rowSlots[step].visible;
+        const background = active?.track.color ?? visible?.track.color;
         const isNoteStart = Boolean(visible && visible.note.start === step);
         const isContinuation = Boolean(visible && visible.note.start < step);
-        const isHoverPreview =
-          hoverNote?.pitch === pitch && step >= hoverNote.start && step < Math.min(steps, hoverNote.start + noteLength);
+        const previewDuration = hoverNote?.duration ?? noteLength;
+        const isHoverPreview = hoverNote !== null && step >= hoverNote.start && step < Math.min(steps, hoverNote.start + previewDuration);
 
         return (
           <button
-            className="border-b border-r border-[#d6e4ef]/70"
+            className={`border-b border-[#d6e4ef]/55 ${step === playStartStep ? "border-l-2 border-l-[#245b82]" : ""} ${gridBorderClass(step, clip)}`}
             key={`${pitch}-${step}`}
             onClick={(event) => {
+              if (freeEdit) {
+                event.preventDefault();
+                return;
+              }
               if (longPressRef.current) {
                 event.preventDefault();
                 return;
               }
               toggleNote(pitch, step);
             }}
-            onMouseEnter={() => setHoverNote({ pitch, start: step })}
-            onMouseLeave={() => {
+            onPointerDown={(event) => startFreeEdit(event, step)}
+            onPointerEnter={() => {
+              updateFreeEdit(step);
+              if (!freeEditDragRef.current) {
+                setHoverNote({ start: step });
+              }
+            }}
+            onPointerUp={() => finishFreeEdit(step)}
+            onPointerCancel={() => {
+              freeEditDragRef.current = null;
               setHoverNote(null);
+            }}
+            onMouseLeave={() => {
+              if (!freeEditDragRef.current) {
+                setHoverNote(null);
+              }
             }}
             style={{
               backgroundColor: background
@@ -1982,7 +2186,21 @@ function ImageImportPanel({
   );
 }
 
-function NumberControl({ label, max, min, onChange, value }: { label: string; max: number; min: number; onChange: (value: number) => void; value: number }) {
+function NumberControl({
+  disabled = false,
+  label,
+  max,
+  min,
+  onChange,
+  value
+}: {
+  disabled?: boolean;
+  label: string;
+  max: number;
+  min: number;
+  onChange: (value: number) => void;
+  value: number;
+}) {
   const [text, setText] = useState(String(value));
 
   useEffect(() => {
@@ -2001,10 +2219,11 @@ function NumberControl({ label, max, min, onChange, value }: { label: string; ma
   }
 
   return (
-    <label className="flex items-center gap-2 text-sm">
+    <label className={`flex items-center gap-2 text-sm ${disabled ? "opacity-50" : ""}`}>
       {label}
       <input
-        className="h-8 w-16 rounded-md border border-[#c9d8e8] bg-white px-2 text-sm outline-none"
+        className="h-8 w-16 rounded-md border border-[#c9d8e8] bg-white px-2 text-sm outline-none disabled:cursor-not-allowed"
+        disabled={disabled}
         max={max}
         min={min}
         onBlur={() => {
@@ -2118,6 +2337,27 @@ function melodyCellBackground(step: number, playheadStep: number | null, clip: M
     return "rgba(247, 251, 255, 0.18)";
   }
   return "rgba(255, 255, 255, 0.08)";
+}
+
+function timelineMarkerKind(step: number, clip: MelodyClip): "bar" | "beat" | "step" {
+  if (step % (clip.beatsPerBar * clip.stepsPerBeat) === 0) {
+    return "bar";
+  }
+  if (step % clip.stepsPerBeat === 0) {
+    return "beat";
+  }
+  return "step";
+}
+
+function gridBorderClass(step: number, clip: MelodyClip): string {
+  const marker = timelineMarkerKind(step + 1, clip);
+  if (marker === "bar") {
+    return "border-r-2 border-r-[#7faad2]";
+  }
+  if ((step + 1) % clip.stepsPerBeat === 0) {
+    return "border-r border-r-[#b9cfe4]";
+  }
+  return "border-r border-r-[#e8f0f8]";
 }
 
 function pitchToVisualPercent(pitch: number): number {
