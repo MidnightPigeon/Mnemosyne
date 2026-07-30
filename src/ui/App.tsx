@@ -973,15 +973,18 @@ function TextEditor({
     const selectionEnd = textarea?.selectionEnd ?? selectionStart;
     const selectedText = body.slice(selectionStart, selectionEnd);
     const insertion = buildTextFormatInsertion(format, syntax, selectedText);
-    const nextBody = `${body.slice(0, selectionStart)}${insertion.text}${body.slice(selectionEnd)}`;
     const nextSelectionStart = selectionStart + insertion.selectionStart;
     const nextSelectionEnd = selectionStart + insertion.selectionEnd;
 
-    onBodyChange(nextBody);
-    window.requestAnimationFrame(() => {
-      textarea?.focus();
-      textarea?.setSelectionRange(nextSelectionStart, nextSelectionEnd);
-    });
+    if (textarea) {
+      textarea.focus();
+      textarea.setRangeText(insertion.text, selectionStart, selectionEnd, "preserve");
+      textarea.setSelectionRange(nextSelectionStart, nextSelectionEnd);
+      onBodyChange(textarea.value);
+      return;
+    }
+
+    onBodyChange(`${body}${insertion.text}`);
   }
 
   return (
@@ -1029,6 +1032,7 @@ function TextEditor({
                 className={`block w-full rounded-md border ${theme.border} bg-white p-3 text-left transition ${theme.hover}`}
                 key={syntax}
                 onClick={() => insertHelpSyntax(syntax)}
+                onMouseDown={(event) => event.preventDefault()}
                 title={effect}
                 type="button"
               >
