@@ -38,10 +38,9 @@
         "headerImage": "installer/nsis-header.bmp",
         "sidebarImage": "installer/nsis-sidebar.bmp",
         "languages": [
-            "English",
-            "SimpChinese"
+          "SimpChinese"
         ],
-        "displayLanguageSelector": true
+        "displayLanguageSelector": false
       }
     }
   }

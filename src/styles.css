@@ -27,6 +27,82 @@ textarea {
   font: inherit;
 }
 
+.bongo-cat-button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  height: 68px;
+  justify-content: center;
+  padding: 0;
+  width: 112px;
+}
+
+.bongo-cat {
+  display: block;
+  height: 59px;
+  overflow: visible;
+  position: relative;
+  width: 104px;
+}
+
+.bongo-cat-stage {
+  height: 450px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  transform: scale(0.13);
+  transform-origin: left top;
+  width: 800px;
+}
+
+.bongo-cat-layer {
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  height: 450px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 800px;
+}
+
+.bongo-cat-rule {
+  background: #17212b;
+  height: 5px;
+  left: -400px;
+  position: absolute;
+  top: 140px;
+  transform: rotate(13.5deg);
+  width: 1600px;
+  z-index: 10;
+}
+
+.bongo-cat-head {
+  z-index: 10;
+}
+
+.bongo-cat-mouth,
+.bongo-cat-bongo {
+  z-index: 20;
+}
+
+.bongo-cat-paw-left {
+  z-index: 30;
+}
+
+.bongo-cat-paw-right {
+  z-index: 30;
+}
+
+.bongo-cat-action-left .bongo-cat-paw-left {
+  background-position-x: -800px;
+}
+
+.bongo-cat-action-right .bongo-cat-paw-right {
+  background-position-x: -800px;
+}
+
 .markdown-preview h1 {
   font-size: 1.6rem;
   font-weight: 700;

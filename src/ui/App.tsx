@@ -1,5 +1,10 @@
 import { type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import bongoImage from "../assets/bongo-cat/bongo.png";
+import bongoCatImage from "../assets/bongo-cat/cat.png";
+import bongoMouthImage from "../assets/bongo-cat/mouth.png";
+import bongoPawLeftImage from "../assets/bongo-cat/paw-left.png";
+import bongoPawRightImage from "../assets/bongo-cat/paw-right.png";
 import { audioExamples } from "../data/audioExamples";
 import {
   exportCanvasJpg,
@@ -48,7 +53,7 @@ import type { Idea, IdeaKind, MelodyClip, MelodyNote, PixelCanvas, TextFormat } 
 
 const themes = {
   sky: {
-    label: "浅蓝",
+    label: "天空",
     app: "bg-[#eef6ff]",
     panel: "bg-[#f7fbff]",
     side: "bg-[#e5f0fb]",
@@ -70,7 +75,7 @@ const themes = {
     primary: "bg-[#286451] hover:bg-[#1f5343] text-white"
   },
   gray: {
-    label: "浅灰",
+    label: "灰色",
     app: "bg-[#f3f5f7]",
     panel: "bg-[#fbfcfd]",
     side: "bg-[#e9edf2]",
@@ -81,7 +86,7 @@ const themes = {
     primary: "bg-[#34495f] hover:bg-[#2b3d50] text-white"
   },
   blush: {
-    label: "淡粉",
+    label: "粉色",
     app: "bg-[#fff1f5]",
     panel: "bg-[#fffafd]",
     side: "bg-[#f8e5ec]",
@@ -117,20 +122,59 @@ const themes = {
 
 type ThemeKey = keyof typeof themes;
 type LanguageKey = "zh" | "en";
+type SettingsSection = "appearance" | "features" | "notifications" | "misc";
+type ChineseFontKey = "system" | "song" | "hei" | "kai" | "fangsong";
+type EnglishFontKey = "system" | "sans" | "serif" | "mono" | "rounded";
+type BongoCatAction = "left" | "right";
+
+const chineseFontStacks: Record<ChineseFontKey, string> = {
+  system: 'system-ui, "Segoe UI", sans-serif',
+  song: '"SimSun", "Noto Serif CJK SC", serif',
+  hei: '"Microsoft YaHei", "Noto Sans CJK SC", sans-serif',
+  kai: '"KaiTi", "STKaiti", serif',
+  fangsong: '"FangSong", "STFangsong", serif'
+};
+
+const englishFontStacks: Record<EnglishFontKey, string> = {
+  system: 'system-ui, "Segoe UI", sans-serif',
+  sans: 'Inter, "Segoe UI", Arial, sans-serif',
+  serif: 'Georgia, "Times New Roman", serif',
+  mono: '"JetBrains Mono", Consolas, monospace',
+  rounded: '"Trebuchet MS", "Segoe UI", Arial, sans-serif'
+};
 
 const pixelScaleFactors = [0.1, 0.25, 0.5, 0.75, 1.5, 2, 3, 4];
 const maxMelodyBars = 256;
-const melodyMinPitch = 21; // A0，标准 88 键最低音。
-const melodyMaxPitch = 108; // C8，覆盖常见小提琴高音写作上沿。
-
+const melodyMinPitch = 21; // A0
+const melodyMaxPitch = 108; // C8
 const authorUrl = "https://github.com/MidnightPigeon";
+const bongoCatSourceUrl = "https://github.com/Externalizable/bongo.cat";
 
 const uiText = {
   zh: {
     appName: "星忆",
     appTagline: "记录，而后雕琢。",
     language: "语言",
-    theme: "主题选择",
+    theme: "主题",
+    settings: "设置",
+    appearanceSettings: "界面",
+    featureSettings: "功能",
+    notificationSettings: "通知",
+    miscSettings: "杂项",
+    defaultIdeaKind: "新建默认类型",
+    deletePrompt: "删除提示弹出",
+    textHelpDefault: "文本格式提示默认开启",
+    chineseFont: "中文字体",
+    englishFont: "英文字体",
+    format: "格式",
+    bongoPitch: "猫猫鼓音高",
+    leftPawInstrument: "左爪音色",
+    rightPawInstrument: "右爪音色",
+    enabled: "开启",
+    disabled: "关闭",
+    confirm: "确定",
+    cancel: "取消",
+    close: "关闭",
     new: "新建",
     kindMarkdown: "文本记录",
     kindPixel: "像素画布",
@@ -140,6 +184,8 @@ const uiText = {
     search: "搜索灵感...",
     loadingIdeas: "正在读取本地灵感...",
     chooseStorage: "选择存储文件夹",
+    currentStorage: "当前存储目录",
+    pixelCat: "敲鼓猫猫",
     contactAuthor: "联系作者",
     authorAvatar: "作者头像",
     preparingStorage: "正在准备存储目录",
@@ -160,7 +206,7 @@ const uiText = {
     exportWav: "导出 WAV",
     exportLatexPdf: "导出 LaTeX PDF",
     delete: "删除",
-    deleteConfirm: "确定删除当前灵感吗？这个操作会删除对应的本地 JSON 文件。",
+    deleteConfirm: "确定要删除当前灵感吗？这个操作会删除对应的本地文件。",
     textTitle: "文本记录名称",
     textPlaceholder: "在这里记录正文。标题已经独立保存，不需要写在第一行。",
     textFormat: "文本格式",
@@ -170,7 +216,7 @@ const uiText = {
     latexHelp: "LaTeX 辅助",
     melodyTitle: "旋律片段名称",
     bars: "小节",
-    beatsPerBar: "每小节拍",
+    beatsPerBar: "每小节拍数",
     noteLength: "音符长度",
     freeEdit: "自由编辑",
     stop: "停止",
@@ -181,8 +227,9 @@ const uiText = {
     playTrack: "播放当前音轨",
     importMidi: "导入 MIDI",
     addTrack: "添加音轨",
-    deleteTrack: "删除音轨",
+    deleteTrack: "删除当前音轨",
     audioExample: "音频示例",
+    createAudioExample: "创建音频示例",
     instrument: "音色",
     volume: "音量",
     uiZoom: "界面缩放",
@@ -231,6 +278,20 @@ const uiText = {
       starlight: "星空",
       dream: "梦幻"
     },
+    chineseFonts: {
+      system: "系统默认",
+      song: "宋体",
+      hei: "雅黑/黑体",
+      kai: "楷体",
+      fangsong: "仿宋"
+    },
+    englishFonts: {
+      system: "系统默认",
+      sans: "无衬线",
+      serif: "衬线",
+      mono: "等宽",
+      rounded: "圆体"
+    },
     markdownTips: [
       ["# 标题", "一级标题"],
       ["## 小标题", "二级标题"],
@@ -261,6 +322,25 @@ const uiText = {
     appTagline: "Capture first. Shape later.",
     language: "Language",
     theme: "Theme",
+    settings: "Settings",
+    appearanceSettings: "Interface",
+    featureSettings: "Features",
+    notificationSettings: "Notifications",
+    miscSettings: "Misc",
+    defaultIdeaKind: "Default new type",
+    deletePrompt: "Delete confirmation prompt",
+    textHelpDefault: "Text format helper opens by default",
+    chineseFont: "Chinese font",
+    englishFont: "English font",
+    format: "Format",
+    bongoPitch: "Cat drum pitch",
+    leftPawInstrument: "Left paw instrument",
+    rightPawInstrument: "Right paw instrument",
+    enabled: "On",
+    disabled: "Off",
+    confirm: "Confirm",
+    cancel: "Cancel",
+    close: "Close",
     new: "New",
     kindMarkdown: "Text record",
     kindPixel: "Pixel canvas",
@@ -270,6 +350,8 @@ const uiText = {
     search: "Search ideas...",
     loadingIdeas: "Reading local ideas...",
     chooseStorage: "Choose storage folder",
+    currentStorage: "Current storage folder",
+    pixelCat: "Bongo Cat",
     contactAuthor: "Contact author",
     authorAvatar: "Author avatar",
     preparingStorage: "Preparing storage folder",
@@ -290,7 +372,7 @@ const uiText = {
     exportWav: "Export WAV",
     exportLatexPdf: "Export LaTeX PDF",
     delete: "Delete",
-    deleteConfirm: "Delete this idea? This will remove its local JSON file.",
+    deleteConfirm: "Delete this idea? This will remove its local file.",
     textTitle: "Text record name",
     textPlaceholder: "Write here. The title is saved separately, so it does not need to be the first line.",
     textFormat: "Text format",
@@ -300,7 +382,7 @@ const uiText = {
     latexHelp: "LaTeX Help",
     melodyTitle: "Melody clip name",
     bars: "Bars",
-    beatsPerBar: "Beats/bar",
+    beatsPerBar: "Beats per bar",
     noteLength: "Note length",
     freeEdit: "Free edit",
     stop: "Stop",
@@ -311,8 +393,9 @@ const uiText = {
     playTrack: "Play current track",
     importMidi: "Import MIDI",
     addTrack: "Add track",
-    deleteTrack: "Delete track",
+    deleteTrack: "Delete current track",
     audioExample: "Audio example",
+    createAudioExample: "Create audio example",
     instrument: "Instrument",
     volume: "Volume",
     uiZoom: "UI zoom",
@@ -361,6 +444,20 @@ const uiText = {
       starlight: "Starlight",
       dream: "Dream"
     },
+    chineseFonts: {
+      system: "System default",
+      song: "Songti",
+      hei: "Hei / YaHei",
+      kai: "Kaiti",
+      fangsong: "Fangsong"
+    },
+    englishFonts: {
+      system: "System default",
+      sans: "Sans serif",
+      serif: "Serif",
+      mono: "Monospace",
+      rounded: "Rounded"
+    },
     markdownTips: [
       ["# Heading", "Level 1 heading"],
       ["## Subheading", "Level 2 heading"],
@@ -405,6 +502,44 @@ const instrumentNamesEn: Record<number, string> = {
 
 type UiCopy = (typeof uiText)[LanguageKey];
 
+function GearIcon() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+      <path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z" />
+      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1A2 2 0 1 1 4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.3 7A2 2 0 1 1 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1A2 2 0 1 1 19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z" />
+    </svg>
+  );
+}
+
+function BongoCat({ action }: { action: BongoCatAction | null }) {
+  return (
+    <div aria-hidden="true" className={`bongo-cat bongo-cat-action-${action ?? "idle"}`}>
+      <div className="bongo-cat-stage">
+        <div className="bongo-cat-rule" />
+        <div className="bongo-cat-layer bongo-cat-head" style={{ backgroundImage: `url(${bongoCatImage})` }} />
+        <div className="bongo-cat-layer bongo-cat-mouth" style={{ backgroundImage: `url(${bongoMouthImage})` }} />
+        <div className="bongo-cat-layer bongo-cat-paw-left" style={{ backgroundImage: `url(${bongoPawLeftImage})` }} />
+        <div className="bongo-cat-layer bongo-cat-paw-right" style={{ backgroundImage: `url(${bongoPawRightImage})` }} />
+        <div className="bongo-cat-layer bongo-cat-bongo" style={{ backgroundImage: `url(${bongoImage})` }} />
+      </div>
+    </div>
+  );
+}
+
+function readStoredNumber(key: string, fallback: number, min: number, max: number) {
+  const value = Number(localStorage.getItem(key) ?? fallback);
+  return Number.isFinite(value) ? Math.max(min, Math.min(max, Math.round(value))) : fallback;
+}
+
+function formatPitchName(pitch: number) {
+  const names = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  return `${names[pitch % 12]}${Math.floor(pitch / 12) - 1}`;
+}
+
+function isBlackPitch(pitch: number) {
+  return [1, 3, 6, 8, 10].includes(pitch % 12);
+}
+
 export function App() {
   const {
     ideas,
@@ -433,19 +568,41 @@ export function App() {
     saveSelectedIdea,
     setQuery,
     removeIdea,
-    removeSelectedIdea,
     chooseStorageFolder
   } = useIdeaStore();
 
   const [themeKey, setThemeKey] = useState<ThemeKey>(() => {
     return (localStorage.getItem("mnemosyne-theme") as ThemeKey | null) ?? "sky";
   });
-  const [newKind, setNewKind] = useState<IdeaKind>("markdown");
+  const [defaultIdeaKind, setDefaultIdeaKind] = useState<IdeaKind>(() => {
+    return (localStorage.getItem("mnemosyne-default-kind") as IdeaKind | null) ?? "markdown";
+  });
+  const [newKind, setNewKind] = useState<IdeaKind>(() => {
+    return (localStorage.getItem("mnemosyne-default-kind") as IdeaKind | null) ?? "markdown";
+  });
+  const [newTextFormat, setNewTextFormat] = useState<TextFormat>("markdown");
+  const [newMelodyBars, setNewMelodyBars] = useState(4);
+  const [newMelodyBeatsPerBar, setNewMelodyBeatsPerBar] = useState(4);
   const [canvasWidth, setCanvasWidth] = useState(24);
   const [canvasHeight, setCanvasHeight] = useState(24);
-  const [showMarkdownHelp, setShowMarkdownHelp] = useState(true);
+  const [textHelpDefaultEnabled, setTextHelpDefaultEnabled] = useState(() => localStorage.getItem("mnemosyne-text-help-default") !== "false");
+  const [showMarkdownHelp, setShowMarkdownHelp] = useState(() => localStorage.getItem("mnemosyne-text-help-default") !== "false");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem("mnemosyne-sidebar-collapsed") === "true");
   const [ideaMenu, setIdeaMenu] = useState<{ ideaId: string; x: number; y: number } | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsSection, setSettingsSection] = useState<SettingsSection>("appearance");
+  const [chineseFont, setChineseFont] = useState<ChineseFontKey>(() => (localStorage.getItem("mnemosyne-font-zh") as ChineseFontKey | null) ?? "system");
+  const [englishFont, setEnglishFont] = useState<EnglishFontKey>(() => (localStorage.getItem("mnemosyne-font-en") as EnglishFontKey | null) ?? "system");
+  const [deletePromptEnabled, setDeletePromptEnabled] = useState(() => localStorage.getItem("mnemosyne-delete-prompt") !== "false");
+  const [pendingDeleteIdeaId, setPendingDeleteIdeaId] = useState<string | null>(null);
+  const [selectedAudioExampleId, setSelectedAudioExampleId] = useState(audioExamples[0]?.id ?? "");
+  const [bongoPitch, setBongoPitch] = useState(() => readStoredNumber("mnemosyne-bongo-pitch", 72, melodyMinPitch, melodyMaxPitch));
+  const [bongoLeftProgram, setBongoLeftProgram] = useState(() => readStoredNumber("mnemosyne-bongo-left-program", 80, 0, 127));
+  const [bongoRightProgram, setBongoRightProgram] = useState(() => readStoredNumber("mnemosyne-bongo-right-program", 81, 0, 127));
+  const [bongoPitchPickerOpen, setBongoPitchPickerOpen] = useState(false);
+  const [bongoCatAction, setBongoCatAction] = useState<BongoCatAction | null>(null);
+  const bongoCatResetRef = useRef<number | null>(null);
+  const bongoPitchPickerRef = useRef<HTMLDivElement | null>(null);
   const [language, setLanguage] = useState<LanguageKey>(() => {
     return (localStorage.getItem("mnemosyne-language") as LanguageKey | null) ?? "zh";
   });
@@ -458,6 +615,7 @@ export function App() {
     : undefined;
   const contextIdea = ideaMenu ? allIdeas.find((idea) => idea.id === ideaMenu.ideaId) : undefined;
   const contextDraft = contextIdea && selectedDraft?.id === contextIdea.id ? selectedDraft : contextIdea;
+  const pendingDeleteIdea = pendingDeleteIdeaId ? allIdeas.find((idea) => idea.id === pendingDeleteIdeaId) : undefined;
   const preview = useMemo(() => (draftTextFormat === "markdown" ? renderMarkdown(draftBody) : renderLatexPreview(draftBody)), [draftBody, draftTextFormat]);
 
   useEffect(() => {
@@ -469,8 +627,57 @@ export function App() {
   }, [themeKey]);
 
   useEffect(() => {
+    localStorage.setItem("mnemosyne-default-kind", defaultIdeaKind);
+  }, [defaultIdeaKind]);
+
+  useEffect(() => {
+    localStorage.setItem("mnemosyne-text-help-default", String(textHelpDefaultEnabled));
+  }, [textHelpDefaultEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem("mnemosyne-font-zh", chineseFont);
+  }, [chineseFont]);
+
+  useEffect(() => {
+    localStorage.setItem("mnemosyne-font-en", englishFont);
+  }, [englishFont]);
+
+  useEffect(() => {
+    localStorage.setItem("mnemosyne-delete-prompt", String(deletePromptEnabled));
+  }, [deletePromptEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem("mnemosyne-bongo-pitch", String(bongoPitch));
+  }, [bongoPitch]);
+
+  useEffect(() => {
+    localStorage.setItem("mnemosyne-bongo-left-program", String(bongoLeftProgram));
+  }, [bongoLeftProgram]);
+
+  useEffect(() => {
+    localStorage.setItem("mnemosyne-bongo-right-program", String(bongoRightProgram));
+  }, [bongoRightProgram]);
+
+  useEffect(() => {
     localStorage.setItem("mnemosyne-language", language);
   }, [language]);
+
+  useEffect(() => {
+    if (!bongoPitchPickerOpen) {
+      return;
+    }
+    window.requestAnimationFrame(() => {
+      bongoPitchPickerRef.current?.querySelector(`[data-pitch="${bongoPitch}"]`)?.scrollIntoView({ block: "center" });
+    });
+  }, [bongoPitch, bongoPitchPickerOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (bongoCatResetRef.current !== null) {
+        window.clearTimeout(bongoCatResetRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("mnemosyne-sidebar-collapsed", String(sidebarCollapsed));
@@ -524,15 +731,41 @@ export function App() {
       newKind === "pixel"
         ? { kind: "pixel", width: canvasWidth, height: canvasHeight }
         : newKind === "melody"
-          ? { kind: "melody" }
-          : { kind: "markdown" }
+          ? { kind: "melody", bars: newMelodyBars, beatsPerBar: newMelodyBeatsPerBar }
+          : { kind: "markdown", textFormat: newTextFormat }
     );
   }
 
-  async function handleDelete() {
-    if (selectedIdeaId && window.confirm(ui.deleteConfirm)) {
-      await removeSelectedIdea();
+  async function handleCreateAudioExample() {
+    const example = audioExamples.find((candidate) => candidate.id === selectedAudioExampleId) ?? audioExamples[0];
+    if (!example) {
+      return;
     }
+    await createIdea({
+      kind: "melody",
+      title: example.title,
+      melody: JSON.parse(JSON.stringify(example.melody)) as MelodyClip
+    });
+  }
+
+  function playBongoCat() {
+    const nextAction: BongoCatAction = bongoCatAction === "left" ? "right" : "left";
+    setBongoCatAction(nextAction);
+    previewMelodyNote(bongoPitch, nextAction === "left" ? bongoLeftProgram : bongoRightProgram, 1);
+    if (bongoCatResetRef.current !== null) {
+      window.clearTimeout(bongoCatResetRef.current);
+    }
+    bongoCatResetRef.current = window.setTimeout(() => {
+      setBongoCatAction(null);
+      bongoCatResetRef.current = null;
+    }, 180);
+  }
+
+  async function handleDelete() {
+    if (!selectedIdeaId) {
+      return;
+    }
+    requestDeleteIdea(selectedIdeaId);
   }
 
   function handleIdeaContextMenu(event: ReactMouseEvent, idea: Idea) {
@@ -551,9 +784,24 @@ export function App() {
 
   async function deleteContextIdea(idea: Idea) {
     setIdeaMenu(null);
-    if (window.confirm(ui.deleteConfirm)) {
-      await removeIdea(idea.id);
+    requestDeleteIdea(idea.id);
+  }
+
+  async function requestDeleteIdea(ideaId: string) {
+    if (deletePromptEnabled) {
+      setPendingDeleteIdeaId(ideaId);
+      return;
     }
+    await removeIdea(ideaId);
+  }
+
+  async function confirmPendingDelete() {
+    if (!pendingDeleteIdeaId) {
+      return;
+    }
+    const ideaId = pendingDeleteIdeaId;
+    setPendingDeleteIdeaId(null);
+    await removeIdea(ideaId);
   }
 
   function resolveExportIdea(idea: Idea): Idea {
@@ -639,7 +887,7 @@ export function App() {
   }
 
   return (
-    <main className={`flex h-screen w-screen overflow-hidden ${theme.app} text-[#17212b]`}>
+    <main className={`flex h-screen w-screen overflow-hidden ${theme.app} text-[#17212b]`} style={{ fontFamily: `${englishFontStacks[englishFont]}, ${chineseFontStacks[chineseFont]}` }}>
       <aside className={`flex shrink-0 flex-col border-r ${theme.border} ${theme.side} ${sidebarCollapsed ? "w-14" : "w-[360px]"}`}>
         {sidebarCollapsed ? (
           <div className="flex h-full flex-col items-center gap-3 px-2 py-3">
@@ -650,7 +898,7 @@ export function App() {
               title={ui.showSidebar}
               type="button"
             >
-              ≡
+              &gt;
             </button>
             <button
               aria-label={ui.new}
@@ -674,7 +922,7 @@ export function App() {
                     title={getIdeaTitle(idea, language)}
                     type="button"
                   >
-                    {idea.kind === "pixel" ? "□" : idea.kind === "melody" ? "♪" : "T"}
+                    {idea.kind === "pixel" ? "P" : idea.kind === "melody" ? "M" : "T"}
                   </button>
                 );
               })}
@@ -688,28 +936,31 @@ export function App() {
               <h1 className="text-xl font-semibold leading-none">{ui.appName}</h1>
               <p className={`mt-2 truncate text-sm ${theme.muted}`}>{ui.appTagline}</p>
             </div>
-            <button
-              className={`h-9 rounded-md border ${theme.border} px-2 text-sm ${theme.hover}`}
-              onClick={() => setSidebarCollapsed(true)}
-              title={ui.hideSidebar}
-              type="button"
-            >
-              ‹
-            </button>
-            <label className="flex items-center gap-2 text-xs">
-              {ui.language}
-              <select
-                className={`h-9 rounded-md border ${theme.border} ${theme.panel} px-2 text-sm outline-none`}
-                onChange={(event) => setLanguage(event.target.value as LanguageKey)}
-                value={language}
+            <div className="flex items-center gap-2">
+              <button
+                aria-label={ui.settings}
+                className={`flex h-9 w-9 items-center justify-center rounded-md border ${theme.border} ${theme.panel} text-sm ${theme.hover}`}
+                onClick={() => setSettingsOpen((open) => !open)}
+                title={ui.settings}
+                type="button"
               >
-                <option value="zh">中文</option>
-                <option value="en">English</option>
-              </select>
-            </label>
+                <GearIcon />
+              </button>
+              <button
+                className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`}
+                onClick={() => setSidebarCollapsed(true)}
+                title={ui.hideSidebar}
+                type="button"
+              >
+                {language === "en" ? "Collapse <" : "\u6536\u8d77 <"}
+              </button>
+            </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-[1fr_auto] gap-2">
+          <div className="mt-4 grid grid-cols-[auto_1fr] gap-2">
+            <button className={`h-10 rounded-md px-3 text-sm font-medium ${theme.primary}`} onClick={handleCreateIdea}>
+              {ui.new}
+            </button>
             <select
               className={`h-10 w-full rounded-md border ${theme.border} ${theme.panel} px-3 text-sm outline-none`}
               onChange={(event) => setNewKind(event.target.value as IdeaKind)}
@@ -719,15 +970,31 @@ export function App() {
               <option value="pixel">{ui.kindPixel}</option>
               <option value="melody">{ui.kindMelody}</option>
             </select>
-            <button className={`h-10 rounded-md px-3 text-sm font-medium ${theme.primary}`} onClick={handleCreateIdea}>
-              {ui.new}
-            </button>
           </div>
 
-          {newKind === "pixel" ? (
+          {newKind === "markdown" ? (
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <label className="text-xs">
+                {ui.format}
+              <select
+                className={`mt-1 h-9 w-full rounded-md border ${theme.border} ${theme.panel} px-2 text-sm outline-none`}
+                onChange={(event) => setNewTextFormat(event.target.value as TextFormat)}
+                value={newTextFormat}
+              >
+                <option value="markdown">{ui.markdownFormat}</option>
+                <option value="latex">{ui.latexFormat}</option>
+              </select>
+              </label>
+            </div>
+          ) : newKind === "pixel" ? (
             <div className="mt-2 grid grid-cols-2 gap-2">
               <NumberField label={ui.width} max={128} min={4} onChange={setCanvasWidth} value={canvasWidth} theme={theme} />
               <NumberField label={ui.height} max={128} min={4} onChange={setCanvasHeight} value={canvasHeight} theme={theme} />
+            </div>
+          ) : newKind === "melody" ? (
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <NumberField label={ui.beatsPerBar} max={12} min={1} onChange={setNewMelodyBeatsPerBar} value={newMelodyBeatsPerBar} theme={theme} />
+              <NumberField label={ui.bars} max={maxMelodyBars} min={1} onChange={setNewMelodyBars} value={newMelodyBars} theme={theme} />
             </div>
           ) : null}
 
@@ -737,21 +1004,6 @@ export function App() {
             placeholder={ui.search}
             value={query}
           />
-
-          <label className="mt-3 flex items-center gap-2 text-xs">
-            {ui.theme}
-            <select
-              className={`h-8 flex-1 rounded-md border ${theme.border} ${theme.panel} px-2 text-sm outline-none`}
-              onChange={(event) => setThemeKey(event.target.value as ThemeKey)}
-              value={themeKey}
-            >
-              {Object.keys(themes).map((key) => (
-                <option key={key} value={key}>
-                  {ui.themes[key as ThemeKey]}
-                </option>
-              ))}
-            </select>
-          </label>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
@@ -784,10 +1036,17 @@ export function App() {
           )}
         </div>
 
-        <div className={`border-t ${theme.border} px-5 py-3 text-xs ${theme.muted}`}>
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <button className="underline" onClick={() => void chooseStorageFolder()} type="button">
-              {ui.chooseStorage}
+        <div className={`border-t ${theme.border} px-5 py-2 text-xs ${theme.muted}`}>
+          <div className="flex items-center justify-between gap-3">
+            <button
+              aria-label={ui.pixelCat}
+              className="bongo-cat-button"
+              data-source={bongoCatSourceUrl}
+              onClick={playBongoCat}
+              title={ui.pixelCat}
+              type="button"
+            >
+              <BongoCat action={bongoCatAction} />
             </button>
             <button
               className="flex shrink-0 flex-col items-center gap-1 hover:underline"
@@ -797,15 +1056,12 @@ export function App() {
             >
               <img
                 alt={ui.authorAvatar}
-                className="h-7 w-7 rounded-md border border-[#c9d8e8]"
+                className="h-6 w-6 rounded-md border border-[#c9d8e8]"
                 src="https://github.com/MidnightPigeon.png?size=64"
               />
               <span>{ui.contactAuthor}</span>
             </button>
           </div>
-          <p className="truncate" title={storage?.ideasDir}>
-            {storage?.ideasDir ?? ui.preparingStorage}
-          </p>
         </div>
           </>
         )}
@@ -854,6 +1110,218 @@ export function App() {
           <button className="block w-full px-3 py-2 text-left text-[#9c3d2c] hover:bg-[#fff1ec]" onClick={() => void deleteContextIdea(contextDraft)} type="button">
             {ui.delete}
           </button>
+        </div>
+      ) : null}
+
+      {pendingDeleteIdea ? (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[rgba(23,33,43,0.28)] px-4">
+          <div className={`w-full max-w-sm rounded-md border ${theme.border} ${theme.panel} p-5 shadow-2xl`}>
+            <h2 className="text-base font-semibold">{ui.delete}</h2>
+            <p className={`mt-3 text-sm leading-6 ${theme.muted}`}>
+              {language === "en"
+                ? `Delete "${getIdeaTitle(pendingDeleteIdea, language)}"? This will remove its local file.`
+                : `确定要删除“${getIdeaTitle(pendingDeleteIdea, language)}”吗？这个操作会删除对应的本地文件。`}
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => setPendingDeleteIdeaId(null)} type="button">
+                {ui.cancel}
+              </button>
+              <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.primary}`} onClick={() => void confirmPendingDelete()} type="button">
+                {ui.confirm}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {settingsOpen ? (
+        <div className="fixed inset-0 z-[105] flex items-center justify-center bg-[rgba(23,33,43,0.24)] px-4">
+          <div className={`flex h-[520px] w-full max-w-3xl overflow-hidden rounded-md border ${theme.border} ${theme.panel} shadow-2xl`}>
+            <aside className={`w-40 shrink-0 border-r ${theme.border} ${theme.side} p-3`}>
+              {([
+                ["appearance", ui.appearanceSettings],
+                ["features", ui.featureSettings],
+                ["notifications", ui.notificationSettings],
+                ["misc", ui.miscSettings]
+              ] as Array<[SettingsSection, string]>).map(([section, label]) => (
+                <button
+                  className={`mb-1 block h-9 w-full rounded-md px-3 text-left text-sm ${settingsSection === section ? "border border-[#6d9cc8] bg-white font-medium" : theme.hover}`}
+                  key={section}
+                  onClick={() => setSettingsSection(section)}
+                  type="button"
+                >
+                  {label}
+                </button>
+              ))}
+            </aside>
+            <section className="flex min-w-0 flex-1 flex-col">
+              <div className={`flex h-12 shrink-0 items-center justify-between border-b ${theme.border} px-5`}>
+                <h2 className="text-base font-semibold">{ui.settings}</h2>
+                <button className={`h-8 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => setSettingsOpen(false)} type="button">
+                  {ui.close}
+                </button>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto p-5 text-sm">
+                {settingsSection === "appearance" ? (
+                  <div className="space-y-4">
+                    <label className="flex items-center justify-between gap-4">
+                      <span>{ui.theme}</span>
+                      <select className={`h-9 min-w-44 rounded-md border ${theme.border} bg-white px-2 text-sm outline-none`} onChange={(event) => setThemeKey(event.target.value as ThemeKey)} value={themeKey}>
+                        {Object.keys(themes).map((key) => (
+                          <option key={key} value={key}>
+                            {ui.themes[key as ThemeKey]}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="flex items-center justify-between gap-4">
+                      <span>{ui.language}</span>
+                      <select className={`h-9 min-w-44 rounded-md border ${theme.border} bg-white px-2 text-sm outline-none`} onChange={(event) => setLanguage(event.target.value as LanguageKey)} value={language}>
+                        <option value="zh">中文</option>
+                        <option value="en">English</option>
+                      </select>
+                    </label>
+                    <label className="flex items-center justify-between gap-4">
+                      <span>{ui.chineseFont}</span>
+                      <select className={`h-9 min-w-44 rounded-md border ${theme.border} bg-white px-2 text-sm outline-none`} onChange={(event) => setChineseFont(event.target.value as ChineseFontKey)} value={chineseFont}>
+                        {Object.keys(chineseFontStacks).map((key) => (
+                          <option key={key} value={key}>
+                            {ui.chineseFonts[key as ChineseFontKey]}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="flex items-center justify-between gap-4">
+                      <span>{ui.englishFont}</span>
+                      <select className={`h-9 min-w-44 rounded-md border ${theme.border} bg-white px-2 text-sm outline-none`} onChange={(event) => setEnglishFont(event.target.value as EnglishFontKey)} value={englishFont}>
+                        {Object.keys(englishFontStacks).map((key) => (
+                          <option key={key} value={key}>
+                            {ui.englishFonts[key as EnglishFontKey]}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                ) : settingsSection === "features" ? (
+                  <div className="space-y-4">
+                    <label className="flex items-center justify-between gap-4">
+                      <span>{ui.defaultIdeaKind}</span>
+                      <select
+                        className={`h-9 min-w-44 rounded-md border ${theme.border} bg-white px-2 text-sm outline-none`}
+                        onChange={(event) => {
+                          const nextKind = event.target.value as IdeaKind;
+                          setDefaultIdeaKind(nextKind);
+                          setNewKind(nextKind);
+                        }}
+                        value={defaultIdeaKind}
+                      >
+                        <option value="markdown">{ui.kindMarkdown}</option>
+                        <option value="pixel">{ui.kindPixel}</option>
+                        <option value="melody">{ui.kindMelody}</option>
+                      </select>
+                    </label>
+                    <label className="flex items-center justify-between gap-4">
+                      <span>{ui.textHelpDefault}</span>
+                      <input checked={textHelpDefaultEnabled} onChange={(event) => setTextHelpDefaultEnabled(event.target.checked)} type="checkbox" />
+                    </label>
+                    <div className={`rounded-md border ${theme.border} bg-white p-3`}>
+                      <div className="flex items-center justify-between gap-3">
+                        <span>{ui.audioExample}</span>
+                        <button className={`h-8 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleCreateAudioExample()} type="button">
+                          {ui.createAudioExample}
+                        </button>
+                      </div>
+                      <select
+                        className={`mt-2 h-9 w-full rounded-md border ${theme.border} bg-white px-2 text-sm outline-none`}
+                        onChange={(event) => setSelectedAudioExampleId(event.target.value)}
+                        value={selectedAudioExampleId}
+                      >
+                        {audioExamples.map((example) => (
+                          <option key={example.id} value={example.id}>
+                            {example.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className={`rounded-md border ${theme.border} bg-white p-3`}>
+                      <div className="flex items-center justify-between gap-3">
+                        <span>{ui.chooseStorage}</span>
+                        <button className={`h-8 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void chooseStorageFolder()} type="button">
+                          {ui.chooseStorage}
+                        </button>
+                      </div>
+                      <p className={`mt-2 truncate text-xs ${theme.muted}`} title={storage?.ideasDir}>
+                        {ui.currentStorage}: {storage?.ideasDir ?? ui.preparingStorage}
+                      </p>
+                    </div>
+                  </div>
+                ) : settingsSection === "notifications" ? (
+                  <div className="space-y-4">
+                    <label className="flex items-center justify-between gap-4">
+                      <span>{ui.deletePrompt}</span>
+                      <input checked={deletePromptEnabled} onChange={(event) => setDeletePromptEnabled(event.target.checked)} type="checkbox" />
+                    </label>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className={`rounded-md border ${theme.border} bg-white p-3`}>
+                      <div className="flex items-center justify-between gap-4">
+                        <span>{ui.bongoPitch}</span>
+                        <button className={`h-9 min-w-44 rounded-md border ${theme.border} px-3 text-left text-sm ${theme.hover}`} onClick={() => setBongoPitchPickerOpen((open) => !open)} type="button">
+                          {formatPitchName(bongoPitch)}
+                        </button>
+                      </div>
+                      {bongoPitchPickerOpen ? (
+                        <div className={`mt-3 max-h-56 overflow-y-auto rounded-md border ${theme.border}`} ref={bongoPitchPickerRef}>
+                          {Array.from({ length: melodyMaxPitch - melodyMinPitch + 1 }, (_, index) => melodyMaxPitch - index).map((pitch) => {
+                            const black = isBlackPitch(pitch);
+                            const selected = pitch === bongoPitch;
+                            return (
+                              <button
+                                className={`flex h-8 w-full items-center justify-between border-b px-3 text-sm last:border-b-0 ${
+                                  selected ? theme.primary : black ? "bg-[#17212b] text-white hover:bg-[#263544]" : "bg-white text-[#17212b] hover:bg-[#f4f7fa]"
+                                }`}
+                                data-pitch={pitch}
+                                key={pitch}
+                                onClick={() => {
+                                  setBongoPitch(pitch);
+                                  setBongoPitchPickerOpen(false);
+                                }}
+                                type="button"
+                              >
+                                <span>{formatPitchName(pitch)}</span>
+                                <span className="text-xs opacity-70">{pitch}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : null}
+                    </div>
+                    <label className="flex items-center justify-between gap-4">
+                      <span>{ui.leftPawInstrument}</span>
+                      <select className={`h-9 min-w-44 rounded-md border ${theme.border} bg-white px-2 text-sm outline-none`} onChange={(event) => setBongoLeftProgram(Number(event.target.value))} value={bongoLeftProgram}>
+                        {gmInstruments.map((instrument) => (
+                          <option key={instrument.program} value={instrument.program}>
+                            {language === "en" ? instrumentNamesEn[instrument.program] ?? instrument.name : instrument.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="flex items-center justify-between gap-4">
+                      <span>{ui.rightPawInstrument}</span>
+                      <select className={`h-9 min-w-44 rounded-md border ${theme.border} bg-white px-2 text-sm outline-none`} onChange={(event) => setBongoRightProgram(Number(event.target.value))} value={bongoRightProgram}>
+                        {gmInstruments.map((instrument) => (
+                          <option key={instrument.program} value={instrument.program}>
+                            {language === "en" ? instrumentNamesEn[instrument.program] ?? instrument.name : instrument.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
         </div>
       ) : null}
 
@@ -1206,7 +1674,6 @@ function MelodyEditor({
   const [rollZoom, setRollZoom] = useState(1);
   const [editingTrackId, setEditingTrackId] = useState<string | null>(null);
   const [editingTrackName, setEditingTrackName] = useState("");
-  const [selectedAudioExampleId, setSelectedAudioExampleId] = useState(audioExamples[0]?.id ?? "");
   const playbackRef = useRef<{ id: number; control?: PlaybackControls }>({ id: 0 });
   const rollScrollRef = useRef<HTMLDivElement | null>(null);
   const rollScrollPositionRef = useRef({ left: 0, top: 0 });
@@ -1364,20 +1831,6 @@ function MelodyEditor({
     setEditingTrackId(null);
   }
 
-  function loadSelectedAudioExample() {
-    const example = audioExamples.find((candidate) => candidate.id === selectedAudioExampleId) ?? audioExamples[0];
-    if (!example) {
-      return;
-    }
-
-    stopCurrentPlayback();
-    onTitleChange(example.title);
-    updateClip(example.melody);
-    setActiveTrackIndex(0);
-    setEditingTrackId(null);
-    setPlayStartStep(0);
-  }
-
   async function handleImportMidi() {
     const data = await importMidiFile();
     if (!data) {
@@ -1483,34 +1936,22 @@ function MelodyEditor({
             <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => startPlayback()} type="button">
               {ui.playAudio}
             </button>
+            <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} disabled={!activeTrack} onClick={() => startPlayback(activeTrack?.id)} type="button">
+              {ui.playTrack}
+            </button>
           </>
         )}
-        <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} disabled={!activeTrack || Boolean(playbackControl)} onClick={() => startPlayback(activeTrack?.id)} type="button">
-          {ui.playTrack}
-        </button>
-        <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleImportMidi()} type="button">
-          {ui.importMidi}
-        </button>
-        <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={addTrack} type="button">
-          {ui.addTrack}
-        </button>
-        <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} disabled={clip.tracks.length <= 1} onClick={removeActiveTrack} type="button">
-          {ui.deleteTrack}
-        </button>
-        <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={loadSelectedAudioExample} type="button">
-          {ui.audioExample}
-        </button>
-        <select
-          className={`h-9 max-w-64 rounded-md border ${theme.border} bg-white px-2 text-sm outline-none`}
-          onChange={(event) => setSelectedAudioExampleId(event.target.value)}
-          value={selectedAudioExampleId}
-        >
-          {audioExamples.map((example) => (
-            <option key={example.id} value={example.id}>
-              {example.title}
-            </option>
-          ))}
-        </select>
+        <div className="ml-auto flex flex-wrap items-center gap-3">
+          <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleImportMidi()} type="button">
+            {ui.importMidi}
+          </button>
+          <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={addTrack} type="button">
+            {ui.addTrack}
+          </button>
+          <button className={`h-9 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} disabled={clip.tracks.length <= 1} onClick={removeActiveTrack} type="button">
+            {ui.deleteTrack}
+          </button>
+        </div>
       </div>
 
       <div className={`flex flex-wrap gap-2 border-b ${theme.border} ${theme.panel} px-5 py-2`}>
@@ -1537,7 +1978,7 @@ function MelodyEditor({
             />
           ) : (
             <button
-              className={`h-8 max-w-40 truncate rounded-md border px-3 text-xs ${isActiveTrack ? "bg-white" : theme.hover}`}
+              className={`h-8 max-w-40 truncate rounded-md border px-3 text-xs font-medium shadow-sm transition ${isActiveTrack ? "ring-2 ring-offset-1" : theme.hover}`}
               key={track.id}
               onClick={() => {
                 if (isActiveTrack) {
@@ -1547,7 +1988,11 @@ function MelodyEditor({
                 setEditingTrackId(null);
                 setActiveTrackIndex(index);
               }}
-              style={{ borderColor: track.color, color: track.color }}
+              style={
+                isActiveTrack
+                  ? { backgroundColor: track.color, borderColor: track.color, boxShadow: `0 0 0 2px ${track.color}33`, color: "#ffffff" }
+                  : { borderColor: track.color, color: track.color }
+              }
               title={track.name}
               type="button"
             >
@@ -1843,7 +2288,7 @@ function MelodyVisualPlayer({
         </div>
       </div>
       <div className="absolute left-4 top-4 rounded border border-[#35597a] bg-[#0f2138]/80 px-3 py-1 text-xs text-[#dbeafe]">
-        {pitchName(melodyMinPitch)} - {pitchName(melodyMaxPitch)} · {Math.max(0, Math.floor(visualStep) - startStep)}
+        {pitchName(melodyMinPitch)} - {pitchName(melodyMaxPitch)} 路 {Math.max(0, Math.floor(visualStep) - startStep)}
       </div>
     </div>
   );

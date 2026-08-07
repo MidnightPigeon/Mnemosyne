@@ -8,6 +8,7 @@ use genpdf::{elements, style, Element as _};
 
 const SETTINGS_FILE: &str = "settings.json";
 const IDEAS_DIR: &str = "ideas";
+const DEFAULT_STORAGE_DIR: &str = r"C:\ideas";
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -835,7 +836,7 @@ fn resolve_storage_dir(app: &AppHandle) -> Result<PathBuf, String> {
     let settings = read_settings(app)?;
     let path = match settings.storage_dir {
         Some(value) => PathBuf::from(value),
-        None => app.path().app_data_dir().map_err(|error| error.to_string())?,
+        None => PathBuf::from(DEFAULT_STORAGE_DIR),
     };
 
     fs::create_dir_all(&path).map_err(|error| error.to_string())?;

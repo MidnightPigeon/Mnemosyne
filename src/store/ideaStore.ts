@@ -10,9 +10,9 @@ import { createDefaultMelody } from "../lib/midi";
 import type { Idea, IdeaKind, MelodyClip, PixelCanvas, StorageSettings, TextFormat } from "../types/idea";
 
 type CreateIdeaOptions =
-  | { kind: "markdown" }
+  | { kind: "markdown"; textFormat?: TextFormat }
   | { kind: "pixel"; width: number; height: number }
-  | { kind: "melody" };
+  | { kind: "melody"; title?: string; melody?: MelodyClip; bars?: number; beatsPerBar?: number };
 
 type IdeaState = {
   allIdeas: Idea[];
@@ -95,12 +95,15 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
 
     const now = new Date().toISOString();
     const canvas = options.kind === "pixel" ? createCanvas(options.width, options.height) : undefined;
-    const melody = options.kind === "melody" ? createDefaultMelody() : undefined;
+    const melody =
+      options.kind === "melody"
+        ? normalizeCreatedMelody(options.melody ?? createDefaultMelody(), options.bars, options.beatsPerBar)
+        : undefined;
     const idea: Idea = {
       id: crypto.randomUUID(),
       kind: options.kind,
-      textFormat: options.kind === "markdown" ? "markdown" : undefined,
-      title: defaultTitle(options.kind),
+      textFormat: options.kind === "markdown" ? options.textFormat ?? "markdown" : undefined,
+      title: options.kind === "melody" && options.title ? options.title : defaultTitle(options.kind),
       body: options.kind === "markdown" ? initialMarkdown : "",
       canvas,
       melody,
@@ -305,6 +308,17 @@ function createCanvas(width: number, height: number): PixelCanvas {
     width: safeWidth,
     height: safeHeight,
     pixels: Array.from({ length: safeWidth * safeHeight }, () => "#00000000")
+  };
+}
+
+function normalizeCreatedMelody(melody: MelodyClip, bars?: number, beatsPerBar?: number): MelodyClip {
+  const safeBars = clamp(Math.round(bars ?? melody.bars), 1, 256);
+  const safeBeatsPerBar = clamp(Math.round(beatsPerBar ?? melody.beatsPerBar), 1, 12);
+  return {
+    ...melody,
+    bars: safeBars,
+    beatsPerBar: safeBeatsPerBar,
+    beats: safeBars * safeBeatsPerBar
   };
 }
 
