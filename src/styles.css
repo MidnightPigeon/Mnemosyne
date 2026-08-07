@@ -103,6 +103,117 @@ textarea {
   background-position-x: -800px;
 }
 
+.pixel-quick-menu {
+  background: #ffffff;
+  border: 1px solid rgba(109, 156, 200, 0.86);
+  border-radius: 999px;
+  box-shadow: 0 14px 38px rgba(23, 33, 43, 0.22);
+  height: 148px;
+  overflow: hidden;
+  position: fixed;
+  transform: translate(-50%, -50%);
+  width: 148px;
+  z-index: 80;
+}
+
+.pixel-quick-menu::before,
+.pixel-quick-menu::after {
+  background: #d7e6f2;
+  content: "";
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.pixel-quick-menu::before {
+  bottom: 0;
+  width: 1px;
+}
+
+.pixel-quick-menu::after {
+  height: 1px;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.pixel-quick-menu-action {
+  align-items: center;
+  background: #ffffff;
+  border: 0;
+  color: #245b82;
+  cursor: pointer;
+  display: flex;
+  font-size: 11px;
+  font-weight: 700;
+  height: 50%;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  position: absolute;
+  transition: background-color 120ms ease;
+  width: 50%;
+  z-index: 1;
+}
+
+.pixel-quick-menu-action:hover {
+  background: #edf6ff;
+}
+
+.pixel-quick-menu-action-draw {
+  border-top-left-radius: 999px;
+  left: 0;
+  top: 0;
+}
+
+.pixel-quick-menu-action-pick {
+  border-bottom-right-radius: 999px;
+  bottom: 0;
+  right: 0;
+}
+
+.pixel-quick-menu-action-erase {
+  border-top-right-radius: 999px;
+  right: 0;
+  top: 0;
+}
+
+.pixel-quick-menu-action-clear {
+  border-bottom-left-radius: 999px;
+  bottom: 0;
+  left: 0;
+}
+
+.pixel-quick-menu-action span {
+  max-width: 56px;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 0 #ffffff;
+  white-space: nowrap;
+}
+
+.pixel-quick-menu-center {
+  background: #ffffff;
+  border: 1px solid #c9d8e8;
+  border-radius: 999px;
+  box-shadow:
+    inset 0 0 0 4px #eef6ff,
+    0 2px 8px rgba(23, 33, 43, 0.12);
+  height: 32px;
+  left: 50%;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  z-index: 3;
+}
+
 .markdown-preview h1 {
   font-size: 1.6rem;
   font-weight: 700;

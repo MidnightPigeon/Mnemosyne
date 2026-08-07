@@ -1,4 +1,4 @@
-import { type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent, useEffect, useMemo, useRef, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import bongoImage from "../assets/bongo-cat/bongo.png";
 import bongoCatImage from "../assets/bongo-cat/cat.png";
@@ -6,6 +6,7 @@ import bongoMouthImage from "../assets/bongo-cat/mouth.png";
 import bongoPawLeftImage from "../assets/bongo-cat/paw-left.png";
 import bongoPawRightImage from "../assets/bongo-cat/paw-right.png";
 import { audioExamples } from "../data/audioExamples";
+import { pixelExamples } from "../data/pixelExamples";
 import {
   exportCanvasJpg,
   exportCanvasPng,
@@ -126,6 +127,16 @@ type SettingsSection = "appearance" | "features" | "notifications" | "misc";
 type ChineseFontKey = "system" | "song" | "hei" | "kai" | "fangsong";
 type EnglishFontKey = "system" | "sans" | "serif" | "mono" | "rounded";
 type BongoCatAction = "left" | "right";
+type PixelQuickAction = "draw" | "pick" | "erase" | "clear";
+type EyeDropperResult = { sRGBHex: string };
+type EyeDropperInstance = { open: (options?: { signal?: AbortSignal }) => Promise<EyeDropperResult> };
+type EyeDropperConstructor = new () => EyeDropperInstance;
+
+declare global {
+  interface Window {
+    EyeDropper?: EyeDropperConstructor;
+  }
+}
 
 const chineseFontStacks: Record<ChineseFontKey, string> = {
   system: 'system-ui, "Segoe UI", sans-serif',
@@ -144,6 +155,9 @@ const englishFontStacks: Record<EnglishFontKey, string> = {
 };
 
 const pixelScaleFactors = [0.1, 0.25, 0.5, 0.75, 1.5, 2, 3, 4];
+const minCanvasZoom = 0.2;
+const maxCanvasZoom = 3;
+const storedPixelPaletteKey = "mnemosyne-pixel-palette";
 const maxMelodyBars = 256;
 const melodyMinPitch = 21; // A0
 const melodyMaxPitch = 108; // C8
@@ -241,6 +255,8 @@ const uiText = {
     preview: "试听",
     missingCanvas: "画布数据缺失。",
     pixelTitle: "像素画布名称",
+    pixelExample: "像素画示例",
+    createPixelExample: "创建像素画示例",
     color: "颜色",
     radius: "半径",
     circleArea: "圆形区域",
@@ -258,6 +274,8 @@ const uiText = {
     palette: "存色区",
     selectColor: "选择",
     storeColor: "存入当前颜色",
+    pickColor: "取色",
+    clearCanvas: "清空",
     randomFill: "画面随机填色",
     stopRandomFill: "停止",
     midiImportFailed: "MIDI 导入失败。",
@@ -407,6 +425,8 @@ const uiText = {
     preview: "Preview",
     missingCanvas: "Canvas data is missing.",
     pixelTitle: "Pixel canvas name",
+    pixelExample: "Pixel example",
+    createPixelExample: "Create pixel example",
     color: "Color",
     radius: "Radius",
     circleArea: "Circle area",
@@ -424,6 +444,8 @@ const uiText = {
     palette: "Palette",
     selectColor: "Select",
     storeColor: "Store current color",
+    pickColor: "Pick",
+    clearCanvas: "Clear",
     randomFill: "Random fill",
     stopRandomFill: "Stop",
     midiImportFailed: "MIDI import failed.",
@@ -531,6 +553,22 @@ function readStoredNumber(key: string, fallback: number, min: number, max: numbe
   return Number.isFinite(value) ? Math.max(min, Math.min(max, Math.round(value))) : fallback;
 }
 
+function readStoredPixelPalette(): Array<string | null> {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(storedPixelPaletteKey) ?? "[]");
+    if (!Array.isArray(parsed)) {
+      return Array.from({ length: 12 }, () => null);
+    }
+    return Array.from({ length: 12 }, (_, index) => (isValidStoredColor(parsed[index]) ? parsed[index] : null));
+  } catch {
+    return Array.from({ length: 12 }, () => null);
+  }
+}
+
+function isValidStoredColor(value: unknown): value is string {
+  return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
+}
+
 function formatPitchName(pitch: number) {
   const names = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   return `${names[pitch % 12]}${Math.floor(pitch / 12) - 1}`;
@@ -595,6 +633,7 @@ export function App() {
   const [englishFont, setEnglishFont] = useState<EnglishFontKey>(() => (localStorage.getItem("mnemosyne-font-en") as EnglishFontKey | null) ?? "system");
   const [deletePromptEnabled, setDeletePromptEnabled] = useState(() => localStorage.getItem("mnemosyne-delete-prompt") !== "false");
   const [pendingDeleteIdeaId, setPendingDeleteIdeaId] = useState<string | null>(null);
+  const [selectedPixelExampleId, setSelectedPixelExampleId] = useState(pixelExamples[0]?.id ?? "");
   const [selectedAudioExampleId, setSelectedAudioExampleId] = useState(audioExamples[0]?.id ?? "");
   const [bongoPitch, setBongoPitch] = useState(() => readStoredNumber("mnemosyne-bongo-pitch", 72, melodyMinPitch, melodyMaxPitch));
   const [bongoLeftProgram, setBongoLeftProgram] = useState(() => readStoredNumber("mnemosyne-bongo-left-program", 80, 0, 127));
@@ -745,6 +784,18 @@ export function App() {
       kind: "melody",
       title: example.title,
       melody: JSON.parse(JSON.stringify(example.melody)) as MelodyClip
+    });
+  }
+
+  async function handleCreatePixelExample() {
+    const example = pixelExamples.find((candidate) => candidate.id === selectedPixelExampleId) ?? pixelExamples[0];
+    if (!example) {
+      return;
+    }
+    await createIdea({
+      kind: "pixel",
+      title: example.title,
+      canvas: JSON.parse(JSON.stringify(example.canvas)) as PixelCanvas
     });
   }
 
@@ -1224,6 +1275,25 @@ export function App() {
                       <span>{ui.textHelpDefault}</span>
                       <input checked={textHelpDefaultEnabled} onChange={(event) => setTextHelpDefaultEnabled(event.target.checked)} type="checkbox" />
                     </label>
+                    <div className={`rounded-md border ${theme.border} bg-white p-3`}>
+                      <div className="flex items-center justify-between gap-3">
+                        <span>{ui.pixelExample}</span>
+                        <button className={`h-8 rounded-md border ${theme.border} px-3 text-sm ${theme.hover}`} onClick={() => void handleCreatePixelExample()} type="button">
+                          {ui.createPixelExample}
+                        </button>
+                      </div>
+                      <select
+                        className={`mt-2 h-9 w-full rounded-md border ${theme.border} bg-white px-2 text-sm outline-none`}
+                        onChange={(event) => setSelectedPixelExampleId(event.target.value)}
+                        value={selectedPixelExampleId}
+                      >
+                        {pixelExamples.map((example) => (
+                          <option key={example.id} value={example.id}>
+                            {example.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                     <div className={`rounded-md border ${theme.border} bg-white p-3`}>
                       <div className="flex items-center justify-between gap-3">
                         <span>{ui.audioExample}</span>
@@ -2054,7 +2124,7 @@ function MelodyEditor({
       </div>
 
       {visualPlayback ? (
-        <MelodyVisualPlayer clip={clip} paused={playbackPaused} playheadStep={playheadStep ?? playStartStep} startStep={playStartStep} trackId={undefined} />
+        <MelodyVisualPlayer clip={clip} paused={playbackPaused} playheadStep={playheadStep ?? playStartStep} trackId={undefined} />
       ) : (
       <div className="min-h-0 flex-1 overflow-auto pb-5 pr-5" ref={rollScrollRef}>
         <div
@@ -2157,13 +2227,11 @@ function MelodyVisualPlayer({
   clip,
   paused,
   playheadStep,
-  startStep,
   trackId
 }: {
   clip: MelodyClip;
   paused: boolean;
   playheadStep: number;
-  startStep: number;
   trackId?: string;
 }) {
   const normalized = useMemo(() => normalizeMelodyClip(clip), [clip]);
@@ -2209,6 +2277,10 @@ function MelodyVisualPlayer({
   const activePitches = new Set(activeNotes.map(({ note }) => note.pitch));
   const activePitchColors = new Map(activeNotes.map(({ note, track }) => [note.pitch, track.color]));
   const keys = useMemo(() => Array.from({ length: melodyMaxPitch - melodyMinPitch + 1 }, (_, index) => melodyMinPitch + index), []);
+  const barStepCount = normalized.beatsPerBar * normalized.stepsPerBeat;
+  const displayStep = Math.min(visualStep, normalized.bars * barStepCount - 1);
+  const currentBar = Math.floor(displayStep / barStepCount) + 1;
+  const currentBeat = Math.floor((displayStep % barStepCount) / normalized.stepsPerBeat) + 1;
   const starFieldStyle = {
     backgroundImage:
       "radial-gradient(circle at 12% 18%, rgba(255,255,255,0.9) 0 1px, transparent 1.5px), radial-gradient(circle at 28% 62%, rgba(186,230,253,0.85) 0 1px, transparent 1.5px), radial-gradient(circle at 42% 31%, rgba(255,255,255,0.8) 0 1px, transparent 1.5px), radial-gradient(circle at 65% 12%, rgba(219,234,254,0.9) 0 1px, transparent 1.5px), radial-gradient(circle at 78% 44%, rgba(255,255,255,0.75) 0 1px, transparent 1.5px), radial-gradient(circle at 91% 76%, rgba(186,230,253,0.8) 0 1px, transparent 1.5px), linear-gradient(180deg, #071326 0%, #0b1930 44%, #050b15 100%)",
@@ -2288,7 +2360,7 @@ function MelodyVisualPlayer({
         </div>
       </div>
       <div className="absolute left-4 top-4 rounded border border-[#35597a] bg-[#0f2138]/80 px-3 py-1 text-xs text-[#dbeafe]">
-        {pitchName(melodyMinPitch)} - {pitchName(melodyMaxPitch)} 路 {Math.max(0, Math.floor(visualStep) - startStep)}
+        第 {currentBar} 小节 第 {currentBeat} 拍
       </div>
     </div>
   );
@@ -2543,7 +2615,7 @@ function PixelEditor({
   const [sprayRadius, setSprayRadius] = useState(4);
   const [sprayShape, setSprayShape] = useState<SprayShape>("circle");
   const [showPixelGrid, setShowPixelGrid] = useState(true);
-  const [storedColors, setStoredColors] = useState<Array<string | null>>(() => Array.from({ length: 12 }, () => null));
+  const [storedColors, setStoredColors] = useState<Array<string | null>>(() => readStoredPixelPalette());
   const [targetWidth, setTargetWidth] = useState(canvas?.width ?? 64);
   const [targetHeight, setTargetHeight] = useState(canvas?.height ?? 64);
   const [scaleFactor, setScaleFactor] = useState(1);
@@ -2552,6 +2624,10 @@ function PixelEditor({
   const [hoverPoint, setHoverPoint] = useState<PixelPoint | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [randomFillRunning, setRandomFillRunning] = useState(false);
+  const [quickMenu, setQuickMenu] = useState<{ x: number; y: number } | null>(null);
+  const colorInputRef = useRef<HTMLInputElement | null>(null);
+  const quickMenuRef = useRef<HTMLDivElement | null>(null);
+  const eyeDropperAbortRef = useRef<AbortController | null>(null);
   const randomFillCanvasRef = useRef<PixelCanvas | undefined>(canvas);
 
   const drawOptions: DrawOptions = { color, thickness, filled, sprayRadius, sprayShape };
@@ -2591,6 +2667,36 @@ function PixelEditor({
   useEffect(() => {
     randomFillCanvasRef.current = canvas;
   }, [canvas]);
+
+  useEffect(() => {
+    if (!quickMenu) {
+      return;
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setQuickMenu(null);
+      }
+    }
+
+    function closeOnOutsideLeftClick(event: MouseEvent) {
+      if (event.button !== 0 || quickMenuRef.current?.contains(event.target as Node)) {
+        return;
+      }
+      setQuickMenu(null);
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    window.addEventListener("mousedown", closeOnOutsideLeftClick, true);
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+      window.removeEventListener("mousedown", closeOnOutsideLeftClick, true);
+    };
+  }, [quickMenu]);
+
+  useEffect(() => {
+    localStorage.setItem(storedPixelPaletteKey, JSON.stringify(storedColors));
+  }, [storedColors]);
 
   useEffect(() => {
     if (!randomFillRunning) {
@@ -2646,7 +2752,12 @@ function PixelEditor({
     }
   }
 
-  function handlePointerDown(index: number) {
+  function handlePointerDown(index: number, event: ReactMouseEvent<HTMLButtonElement>) {
+    if (event.button !== 0) {
+      event.preventDefault();
+      return;
+    }
+    setQuickMenu(null);
     const point = pointFromIndex(index, currentCanvas.width);
     setIsDragging(true);
     setHoverPoint(point);
@@ -2665,7 +2776,11 @@ function PixelEditor({
     }
   }
 
-  function handlePointerUp(index: number) {
+  function handlePointerUp(index: number, event: ReactMouseEvent<HTMLButtonElement>) {
+    if (event.button !== 0) {
+      event.preventDefault();
+      return;
+    }
     const point = pointFromIndex(index, currentCanvas.width);
     setIsDragging(false);
     setHoverPoint(null);
@@ -2731,6 +2846,26 @@ function PixelEditor({
     onCanvasChange(scaleCanvasPixels(currentCanvas, scaleFactor));
   }
 
+  function handleClearCanvas() {
+    onCanvasChange({
+      ...currentCanvas,
+      pixels: Array.from({ length: currentCanvas.width * currentCanvas.height }, () => transparentPixel)
+    });
+  }
+
+  function updateCanvasZoom(value: number) {
+    setCanvasZoom(Math.max(minCanvasZoom, Math.min(maxCanvasZoom, value)));
+  }
+
+  function handleCanvasWheel(event: ReactWheelEvent<HTMLDivElement>) {
+    if (!event.ctrlKey) {
+      return;
+    }
+    event.preventDefault();
+    const direction = event.deltaY > 0 ? -1 : 1;
+    updateCanvasZoom(canvasZoom + direction * 0.1);
+  }
+
   function handleStoredColor(index: number) {
     const stored = storedColors[index];
     if (stored) {
@@ -2740,8 +2875,88 @@ function PixelEditor({
     setStoredColors((colors) => colors.map((item, itemIndex) => (itemIndex === index ? color : item)));
   }
 
-  function handleStoreCurrentColor(index: number) {
-    setStoredColors((colors) => colors.map((item, itemIndex) => (itemIndex === index ? color : item)));
+  function handleClearStoredColor(index: number) {
+    setStoredColors((colors) => colors.map((item, itemIndex) => (itemIndex === index ? null : item)));
+  }
+
+  function handleDrawingAreaContextMenu(event: ReactMouseEvent<HTMLDivElement>) {
+    event.preventDefault();
+    if (eyeDropperAbortRef.current) {
+      eyeDropperAbortRef.current.abort();
+      eyeDropperAbortRef.current = null;
+      setTool("pencil");
+      return;
+    }
+    setIsDragging(false);
+    setDragStart(null);
+    setQuickMenu({ x: event.clientX, y: event.clientY });
+  }
+
+  async function openNativeEyeDropper() {
+    if (window.EyeDropper) {
+      const abortController = new AbortController();
+      let cancelledByRightClick = false;
+      eyeDropperAbortRef.current = abortController;
+      const cancelOnRightClick = (event: MouseEvent | PointerEvent) => {
+        if (event.button !== 2) {
+          return;
+        }
+        cancelledByRightClick = true;
+        event.preventDefault();
+        event.stopPropagation();
+        if (!abortController.signal.aborted) {
+          abortController.abort();
+        }
+      };
+
+      try {
+        window.addEventListener("pointerdown", cancelOnRightClick, true);
+        window.addEventListener("mousedown", cancelOnRightClick, true);
+        window.addEventListener("contextmenu", cancelOnRightClick, true);
+        const result = await new window.EyeDropper().open({ signal: abortController.signal });
+        if (!cancelledByRightClick && !abortController.signal.aborted) {
+          setColor(result.sRGBHex);
+        }
+      } catch {
+        // Cancellation is the expected path when the user right-clicks or presses Escape.
+      } finally {
+        window.removeEventListener("pointerdown", cancelOnRightClick, true);
+        window.removeEventListener("mousedown", cancelOnRightClick, true);
+        window.removeEventListener("contextmenu", cancelOnRightClick, true);
+        if (eyeDropperAbortRef.current === abortController) {
+          eyeDropperAbortRef.current = null;
+        }
+        setTool("pencil");
+      }
+      return;
+    }
+
+    const input = colorInputRef.current;
+    if (!input) {
+      return;
+    }
+
+    try {
+      input.showPicker();
+    } catch {
+      input.click();
+    }
+    setTool("pencil");
+  }
+
+  async function handleQuickAction(action: PixelQuickAction) {
+    if (action === "draw") {
+      setTool("pencil");
+    } else if (action === "erase") {
+      setTool("eraser");
+    } else if (action === "clear") {
+      handleClearCanvas();
+    } else {
+      setQuickMenu(null);
+      await openNativeEyeDropper();
+      return;
+    }
+    setQuickMenu(null);
   }
 
   return (
@@ -2753,10 +2968,15 @@ function PixelEditor({
           placeholder={ui.pixelTitle}
           value={title}
         />
-        <ToolSelect tool={tool} onToolChange={setTool} theme={theme} ui={ui} />
+        <ToolSelect
+          tool={tool}
+          onToolChange={setTool}
+          theme={theme}
+          ui={ui}
+        />
         <label className="flex items-center gap-2 text-sm">
           {ui.color}
-          <input onChange={(event) => setColor(event.target.value)} type="color" value={color} />
+          <input ref={colorInputRef} onChange={(event) => setColor(event.target.value)} type="color" value={color} />
         </label>
         {tool === "spray" ? (
           <>
@@ -2808,9 +3028,9 @@ function PixelEditor({
             {ui.zoom}
             <input
               className="w-32"
-              max={3}
-              min={0.5}
-              onChange={(event) => setCanvasZoom(Number(event.target.value))}
+              max={maxCanvasZoom}
+              min={minCanvasZoom}
+              onChange={(event) => updateCanvasZoom(Number(event.target.value))}
               step={0.1}
               type="range"
               value={canvasZoom}
@@ -2821,7 +3041,12 @@ function PixelEditor({
       </div>
 
       <div className="flex min-h-0 flex-1">
-        <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-6" onMouseLeave={() => { setIsDragging(false); setHoverPoint(null); }}>
+        <div
+          className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-6"
+          onContextMenu={handleDrawingAreaContextMenu}
+          onMouseLeave={() => { setIsDragging(false); setHoverPoint(null); }}
+          onWheel={handleCanvasWheel}
+        >
           {importDraft ? (
             <ImageImportPanel
               draft={importDraft}
@@ -2842,10 +3067,11 @@ function PixelEditor({
                 <button
                   aria-label={`pixel-${index}`}
                   className={showPixelGrid ? "border border-[#d8e1ea]" : "border-0"}
+                  data-pixel-index={index}
                   key={index}
-                  onMouseDown={() => handlePointerDown(index)}
+                  onMouseDown={(event) => handlePointerDown(index, event)}
                   onMouseEnter={() => handlePointerEnter(index)}
-                  onMouseUp={() => handlePointerUp(index)}
+                  onMouseUp={(event) => handlePointerUp(index, event)}
                   style={{
                     backgroundColor: pixel,
                     boxShadow: cursorPreviewIndices.has(index) ? "inset 0 0 0 2px rgba(36, 91, 130, 0.9)" : undefined,
@@ -2857,23 +3083,49 @@ function PixelEditor({
               ))}
             </div>
           )}
+          {quickMenu ? (
+            <div
+              className="pixel-quick-menu"
+              onContextMenu={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+              }}
+              ref={quickMenuRef}
+              style={{ left: quickMenu.x, top: quickMenu.y }}
+            >
+              <button aria-label={ui.tools.pencil} className="pixel-quick-menu-action pixel-quick-menu-action-draw" onClick={() => void handleQuickAction("draw")} title={ui.tools.pencil} type="button">
+                <span>{ui.tools.pencil}</span>
+              </button>
+              <button aria-label={ui.tools.eraser} className="pixel-quick-menu-action pixel-quick-menu-action-erase" onClick={() => void handleQuickAction("erase")} title={ui.tools.eraser} type="button">
+                <span>{ui.tools.eraser}</span>
+              </button>
+              <button aria-label={ui.pickColor} className="pixel-quick-menu-action pixel-quick-menu-action-pick" onClick={() => void handleQuickAction("pick")} title={ui.pickColor} type="button">
+                <span>{ui.pickColor}</span>
+              </button>
+              <button aria-label={ui.clearCanvas} className="pixel-quick-menu-action pixel-quick-menu-action-clear" onClick={() => void handleQuickAction("clear")} title={ui.clearCanvas} type="button">
+                <span>{ui.clearCanvas}</span>
+              </button>
+              <div className="pixel-quick-menu-center" />
+            </div>
+          ) : null}
         </div>
         <aside className={`flex w-24 shrink-0 flex-col items-center border-l ${theme.border} ${theme.panel} px-3 py-4`}>
           <span className={`mb-3 text-xs ${theme.muted}`}>{ui.palette}</span>
           <div className="grid grid-cols-2 gap-2">
             {storedColors.map((storedColor, index) => (
               <button
-                className={`h-8 w-8 rounded border ${theme.border} bg-white bg-[linear-gradient(45deg,#d9e3ec_25%,transparent_25%),linear-gradient(-45deg,#d9e3ec_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#d9e3ec_75%),linear-gradient(-45deg,transparent_75%,#d9e3ec_75%)] bg-[length:10px_10px] bg-[position:0_0,0_5px,5px_-5px,-5px_0]`}
+                className={`relative h-8 w-8 overflow-hidden rounded border ${theme.border} bg-white bg-[linear-gradient(45deg,#d9e3ec_25%,transparent_25%),linear-gradient(-45deg,#d9e3ec_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#d9e3ec_75%),linear-gradient(-45deg,transparent_75%,#d9e3ec_75%)] bg-[length:10px_10px] bg-[position:0_0,0_5px,5px_-5px,-5px_0]`}
                 key={index}
                 onClick={() => handleStoredColor(index)}
                 onContextMenu={(event) => {
                   event.preventDefault();
-                  handleStoreCurrentColor(index);
+                  handleClearStoredColor(index);
                 }}
-                style={{ backgroundColor: storedColor ?? undefined }}
                 title={storedColor ? `${ui.selectColor} ${storedColor}` : ui.storeColor}
                 type="button"
-              />
+              >
+                {storedColor ? <span className="absolute inset-0" style={{ backgroundColor: storedColor }} /> : null}
+              </button>
             ))}
           </div>
           <button

@@ -11,7 +11,7 @@ import type { Idea, IdeaKind, MelodyClip, PixelCanvas, StorageSettings, TextForm
 
 type CreateIdeaOptions =
   | { kind: "markdown"; textFormat?: TextFormat }
-  | { kind: "pixel"; width: number; height: number }
+  | { kind: "pixel"; title?: string; width?: number; height?: number; canvas?: PixelCanvas }
   | { kind: "melody"; title?: string; melody?: MelodyClip; bars?: number; beatsPerBar?: number };
 
 type IdeaState = {
@@ -94,7 +94,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
     await get().saveSelectedIdea();
 
     const now = new Date().toISOString();
-    const canvas = options.kind === "pixel" ? createCanvas(options.width, options.height) : undefined;
+    const canvas = options.kind === "pixel" ? cloneCanvas(options.canvas) ?? createCanvas(options.width ?? 64, options.height ?? 64) : undefined;
     const melody =
       options.kind === "melody"
         ? normalizeCreatedMelody(options.melody ?? createDefaultMelody(), options.bars, options.beatsPerBar)
@@ -103,7 +103,7 @@ export const useIdeaStore = create<IdeaState>((set, get) => ({
       id: crypto.randomUUID(),
       kind: options.kind,
       textFormat: options.kind === "markdown" ? options.textFormat ?? "markdown" : undefined,
-      title: options.kind === "melody" && options.title ? options.title : defaultTitle(options.kind),
+      title: "title" in options && options.title ? options.title : defaultTitle(options.kind),
       body: options.kind === "markdown" ? initialMarkdown : "",
       canvas,
       melody,
@@ -309,6 +309,10 @@ function createCanvas(width: number, height: number): PixelCanvas {
     height: safeHeight,
     pixels: Array.from({ length: safeWidth * safeHeight }, () => "#00000000")
   };
+}
+
+function cloneCanvas(canvas?: PixelCanvas): PixelCanvas | undefined {
+  return canvas ? JSON.parse(JSON.stringify(canvas)) as PixelCanvas : undefined;
 }
 
 function normalizeCreatedMelody(melody: MelodyClip, bars?: number, beatsPerBar?: number): MelodyClip {
