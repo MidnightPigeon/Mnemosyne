@@ -828,6 +828,14 @@ export function App() {
     });
   }
 
+  function handleAppContextMenu(event: ReactMouseEvent<HTMLElement>) {
+    if (event.defaultPrevented) {
+      return;
+    }
+    event.preventDefault();
+    setIdeaMenu(null);
+  }
+
   async function openContextIdea(idea: Idea) {
     setIdeaMenu(null);
     await selectIdea(idea.id);
@@ -938,7 +946,7 @@ export function App() {
   }
 
   return (
-    <main className={`flex h-screen w-screen overflow-hidden ${theme.app} text-[#17212b]`} style={{ fontFamily: `${englishFontStacks[englishFont]}, ${chineseFontStacks[chineseFont]}` }}>
+    <main className={`flex h-screen w-screen overflow-hidden ${theme.app} text-[#17212b]`} onContextMenu={handleAppContextMenu} style={{ fontFamily: `${englishFontStacks[englishFont]}, ${chineseFontStacks[chineseFont]}` }}>
       <aside className={`flex shrink-0 flex-col border-r ${theme.border} ${theme.side} ${sidebarCollapsed ? "w-14" : "w-[360px]"}`}>
         {sidebarCollapsed ? (
           <div className="flex h-full flex-col items-center gap-3 px-2 py-3">
@@ -2892,6 +2900,13 @@ function PixelEditor({
     setQuickMenu({ x: event.clientX, y: event.clientY });
   }
 
+  function handlePixelEditorContextMenuCapture(event: ReactMouseEvent<HTMLDivElement>) {
+    if (!quickMenu || quickMenuRef.current?.contains(event.target as Node)) {
+      return;
+    }
+    setQuickMenu(null);
+  }
+
   async function openNativeEyeDropper() {
     if (window.EyeDropper) {
       const abortController = new AbortController();
@@ -2960,7 +2975,7 @@ function PixelEditor({
   }
 
   return (
-    <div className={`flex min-h-0 flex-1 flex-col ${theme.app}`}>
+    <div className={`flex min-h-0 flex-1 flex-col ${theme.app}`} onContextMenuCapture={handlePixelEditorContextMenuCapture}>
       <div className={`flex flex-wrap items-center gap-3 border-b ${theme.border} ${theme.panel} px-5 py-3`}>
         <input
           className={`h-9 w-56 rounded-md border ${theme.border} bg-white px-3 text-sm outline-none`}

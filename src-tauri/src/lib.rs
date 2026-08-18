@@ -1,5 +1,4 @@
-use image::imageops::FilterType;
-use image::{DynamicImage, GenericImageView, ImageBuffer, Rgb, Rgba};
+use image::{ImageBuffer, Rgb, Rgba};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -786,26 +785,6 @@ fn import_image_file() -> Result<Option<Vec<u8>>, String> {
     fs::read(path).map(Some).map_err(|error| error.to_string())
 }
 
-#[tauri::command]
-fn import_image_canvas(width: u16, height: u16, crop: bool) -> Result<Option<PixelCanvas>, String> {
-    let Some(path) = rfd::FileDialog::new()
-        .set_title("导入图片为像素画布")
-        .add_filter("Image", &["jpg", "jpeg", "png"])
-        .pick_file()
-    else {
-        return Ok(None);
-    };
-
-    let image = image::open(path).map_err(|error| error.to_string())?;
-    Ok(Some(image_to_canvas(image, width, height, crop)?))
-}
-
-#[tauri::command]
-fn resize_canvas(canvas: PixelCanvas, width: u16, height: u16, crop: bool) -> Result<PixelCanvas, String> {
-    let image = DynamicImage::ImageRgba8(canvas_to_image(&canvas)?);
-    image_to_canvas(image, width, height, crop)
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -824,9 +803,7 @@ pub fn run() {
             import_midi_file,
             export_midi_file,
             export_wav_file,
-            import_image_file,
-            import_image_canvas,
-            resize_canvas
+            import_image_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running Mnemosyne");
@@ -928,76 +905,6 @@ fn flatten_canvas_to_rgb(canvas: &PixelCanvas) -> Result<ImageBuffer<Rgb<u8>, Ve
     }
 
     Ok(image)
-}
-
-fn image_to_canvas(image: DynamicImage, width: u16, height: u16, crop: bool) -> Result<PixelCanvas, String> {
-    let safe_width = width.clamp(4, 512);
-    let safe_height = height.clamp(4, 512);
-    let prepared = if crop {
-        center_crop_to_aspect(image, safe_width as u32, safe_height as u32)
-    } else {
-        pad_to_aspect(image, safe_width as u32, safe_height as u32)
-    };
-    let resized = prepared
-        .resize_exact(safe_width as u32, safe_height as u32, FilterType::Nearest)
-        .to_rgba8();
-
-    let pixels = resized
-        .pixels()
-        .map(|pixel| {
-            if pixel[3] == 255 {
-                format!("#{:02x}{:02x}{:02x}", pixel[0], pixel[1], pixel[2])
-            } else {
-                format!("#{:02x}{:02x}{:02x}{:02x}", pixel[0], pixel[1], pixel[2], pixel[3])
-            }
-        })
-        .collect();
-
-    Ok(PixelCanvas {
-        width: safe_width,
-        height: safe_height,
-        pixels,
-    })
-}
-
-fn center_crop_to_aspect(image: DynamicImage, target_width: u32, target_height: u32) -> DynamicImage {
-    let (width, height) = image.dimensions();
-    let target_aspect = target_width as f64 / target_height as f64;
-    let source_aspect = width as f64 / height as f64;
-
-    if source_aspect > target_aspect {
-        let crop_width = ((height as f64 * target_aspect).round() as u32).clamp(1, width);
-        let x = (width - crop_width) / 2;
-        image.crop_imm(x, 0, crop_width, height)
-    } else {
-        let crop_height = ((width as f64 / target_aspect).round() as u32).clamp(1, height);
-        let y = (height - crop_height) / 2;
-        image.crop_imm(0, y, width, crop_height)
-    }
-}
-
-fn pad_to_aspect(image: DynamicImage, target_width: u32, target_height: u32) -> DynamicImage {
-    let rgba = image.to_rgba8();
-    let (width, height) = rgba.dimensions();
-    let target_aspect = target_width as f64 / target_height as f64;
-    let source_aspect = width as f64 / height as f64;
-    let (canvas_width, canvas_height) = if source_aspect > target_aspect {
-        (width, ((width as f64 / target_aspect).ceil() as u32).max(height))
-    } else {
-        (((height as f64 * target_aspect).ceil() as u32).max(width), height)
-    };
-    let mut padded = ImageBuffer::from_pixel(canvas_width, canvas_height, Rgba([0, 0, 0, 0]));
-    let x_offset = (canvas_width - width) / 2;
-    let y_offset = (canvas_height - height) / 2;
-
-    for y in 0..height {
-        for x in 0..width {
-            let pixel = *rgba.get_pixel(x, y);
-            padded.put_pixel(x + x_offset, y + y_offset, pixel);
-        }
-    }
-
-    DynamicImage::ImageRgba8(padded)
 }
 
 fn parse_hex_color(value: &str) -> Result<[u8; 4], String> {

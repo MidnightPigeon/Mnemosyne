@@ -64,14 +64,6 @@ export async function importImageFile(): Promise<number[] | null> {
   return invoke<number[] | null>("import_image_file");
 }
 
-export async function importImageCanvas(width: number, height: number, crop: boolean): Promise<PixelCanvas | null> {
-  return invoke<PixelCanvas | null>("import_image_canvas", { width, height, crop });
-}
-
-export async function resizeCanvas(canvas: PixelCanvas, width: number, height: number, crop: boolean): Promise<PixelCanvas> {
-  return invoke<PixelCanvas>("resize_canvas", { canvas, width, height, crop });
-}
-
 // 兼容早期没有 title、program 或小节字段的 JSON。
 function normalizeIdea(idea: StoredIdea): Idea {
   return {
